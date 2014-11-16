@@ -19,6 +19,7 @@ module ActiveRecordVisualize
 
     initializer 'active_record_visualize.precompile_assets' do |app|
       app.config.assets.precompile += %w{ active_record_visualize/viewer.js}
+      app.config.assets.precompile += %w{ active_record_visualize/viewer.css}
     end
 
     #load all helpers and decorators
