@@ -18,7 +18,7 @@ module ActiveRecordVisualize
     require 'jbuilder'
 
     initializer 'active_record_visualize.precompile_assets' do |app|
-      app.config.assets.precompile += %w{ active_record_visualize/rules_app.js active_record_visualize/rule_routes_app.js }
+      app.config.assets.precompile += %w{ active_record_visualize/viewer.js}
     end
 
     #load all helpers and decorators
