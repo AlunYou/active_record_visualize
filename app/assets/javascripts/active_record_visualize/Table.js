@@ -14,19 +14,21 @@ var table = function(name, type, columns, dataRows, headerHeight, rowHeight){
 };
 window.ArvTable = table;
 $.extend(table.prototype, {
-    draw: function(parentNode, position) {
+    draw: function(parentNode, position, id) {
         this.clearDrawCache();
         this.width = this.getWidth();
         this.height = this.getHeight();
+        this.id = id;
 
-        var canvas = parentNode
+        this.$canvas = parentNode
             .append("g")
+            .attr("id", this.id)
             .attr("width", this.width)
             .attr("height", this.height)
             .attr("transform", "translate(" + position.left + "," + position.top + ")");
 
-        this.headerGrp = canvas.append("g").attr("class", "headerGrp");
-        this.rowsGrp = canvas.append("g").attr("class", "rowsGrp");
+        this.headerGrp = this.$canvas.append("g").attr("class", "headerGrp");
+        this.rowsGrp = this.$canvas.append("g").attr("class", "rowsGrp");
 
         this.previousSort = null;
         this.refreshTable(null);
@@ -175,5 +177,12 @@ $.extend(table.prototype, {
 
     clearDrawCache: function(){
         this.columnLeftCache = {};
+    },
+
+    destroy: function(){
+        this.columns = null;
+        if(this.$canvas){
+            this.$canvas.remove();
+        }
     }
 });

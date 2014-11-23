@@ -3,6 +3,7 @@ ActiveRecordVisualize::Engine.routes.draw do
   root to: "rules#index"
 
   get 'viewer' => 'viewer#show'
+  get 'table' => 'viewer#table'
 
 end
 

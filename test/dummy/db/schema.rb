@@ -33,20 +33,25 @@ ActiveRecord::Schema.define(version: 20141109140816) do
   create_table "projects", force: true do |t|
     t.string   "name"
     t.string   "description"
+    t.string   "status"
     t.datetime "start_date"
     t.datetime "end_date"
     t.integer  "size"
     t.float    "value"
+    t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "users", force: true do |t|
     t.string   "name"
+    t.string   "email"
     t.string   "gender"
     t.datetime "birth_date"
     t.integer  "age"
     t.float    "money"
+    t.string   "status"
+    t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
