@@ -159,6 +159,17 @@ $.extend(table.prototype, {
         }
     },
 
+    getLeftOfColumnName: function(name){
+        var index = -1;
+        for(var i=0; i<this.columns.length; i++){
+            if(this.columns[i].title === name){
+                index = i;
+                break;
+            }
+        }
+        return this.getLeftOfColumn(index);
+    },
+
     getTopOfRow: function(index){
         return this.rowHeight * index ;
     },

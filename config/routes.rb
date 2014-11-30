@@ -5,6 +5,8 @@ ActiveRecordVisualize::Engine.routes.draw do
   get 'viewer' => 'viewer#show'
   get 'table' => 'viewer#table'
 
+  get 'get_relations' => 'viewer#get_relations'
+
 end
 
 Rails.application.routes.draw do
