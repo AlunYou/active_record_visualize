@@ -21,7 +21,7 @@ $().ready(function() {
             maxChildren:5,
             redrawCallback:redraw
         })
-        .gravity(0.1)
+        .gravity(0.5)
         .charge(function(d, i) { return i ? 0 : -2000; })
         .nodes(nodes)
         .size([w, h]);
@@ -75,41 +75,81 @@ $().ready(function() {
 
                     var table = new ArvTable("test", "single", columns, node.rows, 30, 30);
 
-                    var pos = {left:100+10*nodes.length, top:100+10*nodes.length};
+                    var pos = {left:50+10*nodes.length, top:50+10*nodes.length};
                     table.draw(canvas, pos);
                     //last_table = table;
 
                     var node = {width:table.width+40, height:table.height+40,
-                        /*x:pos.left, y:pos.top,*/ old_x:pos.left, old_y:pos.top, table:table, node_name:node.node_name};
+                    /*x:pos.left, y:pos.top,*/ old_x:pos.left, old_y:pos.top, table:table, node_name:node.node_name};
                     nodes.push(node);
                     node_hash[node.node_name] = node;
                 }
 
                 layout();
 
-                for(var i=0; i<relationData.links.length; i++) {
+                // build the arrow.
+                canvas.append("svg:defs").selectAll("marker")
+                    .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "-10 -5 10 10")
+                    .attr("refX", 0)
+                    .attr("refY",0)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M-10,-3L0,0L-10,3");
+                    //.attr("d", "M0,-5L10,0L0,5");
+
+                var link = canvas.selectAll(".link");
+                link.data(relationData.links)
+                    .enter()
+                    .append("path")
+                    .attr("class", "link")
+                    .attr("marker-end", "url(#end)")
+                    .attr("d", function(d) {
+                        var start_node = node_hash[d.start];
+                        var end_node   = node_hash[d.end];
+
+                        var start_x =  start_node.x + start_node.table.getLeftOfColumnName(link.rel_column) + 10;
+                        var start_y =  start_node.y + start_node.table.getTopOfRow(1) + 10;
+                        var end_x = end_node.x;
+                        var end_y = end_node.y;
+                        var dx = end_x - start_x,
+                            dy = end_y - start_y,
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        return "M" + start_x + "," + start_y + "A" + dr + "," + dr + " 0 0,1 " + end_x + "," + end_y;
+                    });
+                    //.exit();
+                    //.remove();
+
+                /*for(var i=0; i<relationData.links.length; i++) {
                     var link = relationData.links[i];
                     var start_node = node_hash[link.start];
                     var end_node   = node_hash[link.end];
                     if(link.rel_column !== "collection"){
 
                     }
-
                     var start_trans = getTransform(start_node);
                     var end_trans   = getTransform(end_node);
-                    var start_x = start_trans[0] + start_node.x + start_node.table.getLeftOfColumnName(link.rel_column) + 10;
-                    var start_y = start_trans[1] + start_node.y + start_node.table.getTopOfRow(1) + 10;
-                    var end_x = end_trans[0] + end_node.x;
-                    var end_y = end_trans[1] + end_node.y;
+                    var start_x =  start_node.x + start_node.table.getLeftOfColumnName(link.rel_column) + 10;
+                    var start_y =  start_node.y + start_node.table.getTopOfRow(1) + 10;
+                    var end_x = end_node.x;
+                    var end_y = end_node.y;
 
-                    var circle = canvas.append("line")
-                                            .attr("x1", start_x)
-                                            .attr("y1", start_y)
-                                            .attr("x2", end_x)
-                                            .attr("y2", end_y)
-                                            .attr("stroke-width", 2)
-                                            .attr("stroke", "black");
-                }
+                    var lineData = [ { "x": start_x,   "y": start_y},  { "x": end_x,  "y": end_y}];
+                    var lineFunction = d3.svg.line()
+                        .x(function(d) { return d.x; })
+                        .y(function(d) { return d.y; })
+                        .interpolate("bundle");
+                    var lineGraph = canvas.append("path")
+                        .attr("d", lineFunction(lineData))
+                        .attr("stroke", "slategray")
+                        .attr("stroke-width", "1.5px")
+                        .attr("stroke-opacity", 0.6)
+                        .attr("fill", "none");
+                }*/
             },
             error: function (resp) {
 

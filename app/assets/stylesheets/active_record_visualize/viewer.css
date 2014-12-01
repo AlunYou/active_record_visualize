@@ -21,18 +21,29 @@ svg {
 }
 .header rect {
     fill: #0099FF;
+    z-index:10;
 }
 .header text {
     fill: white;
     font: 10px sans-serif;
     text-anchor: middle;
+    z-index:10;
 }
 .cell rect {
     fill: #66FFFF;
     opacity:0.5;
+    z-index:10;
 }
 .cell text {
     fill: black;
     font: 10px sans-serif;
     text-anchor: middle;
+    z-index:10;
+}
+
+.link {
+    stroke: slategray;
+    stroke-opacity: 0.6;
+    fill: none;
+    stroke-width: 1.5px;
 }
