@@ -102,15 +102,15 @@ $().ready(function() {
                     .attr("d", "M-10,-3L0,0L-10,3");
                     //.attr("d", "M0,-5L10,0L0,5");
 
-                var link = canvas.selectAll(".link");
-                link.data(relationData.links)
+                var $link = canvas.selectAll(".link");
+                $link.data(relationData.links)
                     .enter()
                     .append("path")
                     .attr("class", "link")
                     .attr("marker-end", "url(#end)")
-                    .attr("d", function(d) {
-                        var start_node = node_hash[d.start];
-                        var end_node   = node_hash[d.end];
+                    .attr("d", function(link) {
+                        var start_node = node_hash[link.start];
+                        var end_node   = node_hash[link.end];
 
                         var start_x =  start_node.x + start_node.table.getLeftOfColumnName(link.rel_column) + 10;
                         var start_y =  start_node.y + start_node.table.getTopOfRow(1) + 10;
