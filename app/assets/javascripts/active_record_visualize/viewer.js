@@ -106,6 +106,9 @@ $().ready(function() {
                 $link.data(relationData.links)
                     .enter()
                     .append("path")
+                    .attr("id", function(link){
+                        return link.start+"_"+link.end;
+                    })
                     .attr("class", "link")
                     .attr("marker-end", "url(#end)")
                     .attr("d", function(link) {
@@ -123,6 +126,25 @@ $().ready(function() {
                     });
                     //.exit();
                     //.remove();
+
+                var text = canvas.selectAll(".text")
+                    .data(relationData.links)
+                    .enter()
+                    .append("text")
+                    .attr("class", "text")
+                    //.style("font-size",10)
+                    //.style("fill","#000")
+                    .attr("dx",10)
+                    .attr("dy",10)
+                    .append("textPath")
+                    .attr("xlink:href", function(link){
+                        return "#" + link.start + "_" + link.end;
+                    })
+                    .style("text-anchor","end")
+                    .attr("startOffset","80%")
+                    .text(function(link){
+                        return link.relation;
+                    });
 
                 /*for(var i=0; i<relationData.links.length; i++) {
                     var link = relationData.links[i];
