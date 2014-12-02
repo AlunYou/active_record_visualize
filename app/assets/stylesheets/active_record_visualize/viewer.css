@@ -47,3 +47,13 @@ svg {
     fill: none;
     stroke-width: 1.5px;
 }
+
+.text{
+    //stroke: slategray;
+    //stroke-width: 1.5px;
+    //color: slategray;
+    //stroke-opacity: 0.6;
+    //opacity: 0.6;
+    fill: black;
+    font: 15px sans-serif;
+}

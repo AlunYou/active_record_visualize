@@ -87,9 +87,23 @@ $().ready(function() {
 
                 layout();
 
-                // build the arrow.
+                // arrow at the end
                 canvas.append("svg:defs").selectAll("marker")
                     .data(["end"])      // Different link/path types can be defined here
+                    .enter().append("svg:marker")    // This section adds in the arrows
+                    .attr("id", String)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 0)
+                    .attr("refY",0)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("svg:path")
+                    .attr("d", "M10,3L0,0L10,-3");
+
+                //arrow at the start
+                canvas.append("svg:defs").selectAll("marker")
+                    .data(["start"])      // Different link/path types can be defined here
                     .enter().append("svg:marker")    // This section adds in the arrows
                     .attr("id", String)
                     .attr("viewBox", "-10 -5 10 10")
@@ -100,29 +114,67 @@ $().ready(function() {
                     .attr("orient", "auto")
                     .append("svg:path")
                     .attr("d", "M-10,-3L0,0L-10,3");
-                    //.attr("d", "M0,-5L10,0L0,5");
+
+                for(var i=0; i<relationData.links.length; i++) {
+                    var link = relationData.links[i];
+                    link.start_node = node_hash[link.start];
+                    link.end_node = node_hash[link.end];
+                    link.start_x =  link.start_node.x + link.start_node.table.getLeftOfColumnName(link.rel_column) + 10;
+                    link.start_y =  link.start_node.y + link.start_node.table.getTopOfRow(1) + 10;
+                    link.end_x = link.end_node.x;
+                    link.end_y = link.end_node.y;
+                }
 
                 var $link = canvas.selectAll(".link");
                 $link.data(relationData.links)
                     .enter()
                     .append("path")
+                    .attr("id", function(link){
+                        return link.start+"_"+link.end;
+                    })
                     .attr("class", "link")
-                    .attr("marker-end", "url(#end)")
+                    .attr("marker-start", function(link) {
+                        if(link.end_x < link.start_x) {
+                            return "url(#end)";
+                        }
+                    })
+                    .attr("marker-end", function(link) {
+                        if(link.end_x >= link.start_x) {
+                            return "url(#start)";
+                        }
+                    })
                     .attr("d", function(link) {
-                        var start_node = node_hash[link.start];
-                        var end_node   = node_hash[link.end];
-
-                        var start_x =  start_node.x + start_node.table.getLeftOfColumnName(link.rel_column) + 10;
-                        var start_y =  start_node.y + start_node.table.getTopOfRow(1) + 10;
-                        var end_x = end_node.x;
-                        var end_y = end_node.y;
-                        var dx = end_x - start_x,
-                            dy = end_y - start_y,
+                        var dx = link.end_x - link.start_x,
+                            dy = link.end_y - link.start_y,
                             dr = Math.sqrt(dx * dx + dy * dy);
-                        return "M" + start_x + "," + start_y + "A" + dr + "," + dr + " 0 0,1 " + end_x + "," + end_y;
+                        if(link.end_x >= link.start_x){
+                            return "M" + link.start_x + "," + link.start_y + "A" + dr + "," + dr + " 0 0,1 " + link.end_x + "," + link.end_y;
+                        }
+                        else{
+                            return "M" + link.end_x + "," + link.end_y + "A" + dr + "," + dr + " 0 0,1 " + link.start_x + "," + link.start_y;
+                        }
                     });
-                    //.exit();
-                    //.remove();
+
+                var text = canvas.selectAll(".text")
+                    .data(relationData.links)
+                    .enter()
+                    .append("text")
+                    .attr("class", "text")
+                    .attr("dx",10)
+                    .attr("dy",10)
+                    .append("textPath")
+                    .attr("xlink:href", function(link){
+                        return "#" + link.start + "_" + link.end;
+                    })
+                    .style("text-anchor", function(link){
+                        return link.end_x >= link.start_x ? "end" : "start"
+                    })
+                    .attr("startOffset", function(link){
+                        return link.end_x >= link.start_x ? "80%" : "20%"
+                    })
+                    .text(function(link){
+                        return link.relation;
+                    });
 
                 /*for(var i=0; i<relationData.links.length; i++) {
                     var link = relationData.links[i];
