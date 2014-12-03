@@ -8,12 +8,51 @@
 //= require active_record_visualize/Table
 
 var nodes = [];
+var force;
 $().ready(function() {
     var w = 1024, h = 550;
+    var $container;
 
-    var canvas = d3.select(".canvas");
+    function zoomed() {
+        $container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    }
+    function dragStarted(d) {
+        d3.event.sourceEvent.stopPropagation();
+        d3.select(this).classed("dragging", true);
+    }
 
-    var force;
+    function dragged(d) {
+        d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+    }
+
+    function dragEnded(d) {
+        d3.select(this).classed("dragging", false);
+    }
+
+    var zoom = d3.behavior.zoom()
+        .scaleExtent([1, 10])
+        .on("zoom", zoomed);
+
+    var drag = d3.behavior.drag()
+        .origin(function(d) { return d; })
+        .on("dragstart", dragStarted)
+        .on("drag", dragged)
+        .on("dragend", dragEnded);
+
+    var canvas = d3.select(".canvas")
+        .append("g")
+        .attr("transform", "translate(" + 0 + "," + 0 + ")")
+        .call(zoom);
+    $container = canvas.append("g");
+
+    var rect = $container.append("rect")
+        .attr("width", w)
+        .attr("height", h)
+        .style("fill", "none")
+        .style("pointer-events", "all");
+    //rect.call(zoom);
+
+
     var layout = function(){
         force = d3.layout.no_collision_force({
             layout_for:"rect",
@@ -25,6 +64,9 @@ $().ready(function() {
         .charge(function(d, i) { return i ? 0 : -2000; })
         .nodes(nodes)
         .size([w, h]);
+
+       // var drag = setupDrag();
+        //force.enter().call(drag);
 
         force.start();
         for(var i=0; i<100; i++){
@@ -49,6 +91,8 @@ $().ready(function() {
         var values = trans.split(",");
         return [parseFloat(values[0]), parseFloat(values[1])];
     }
+
+
 
     var renderRelations = function(table_name, id){
         $.ajax({
@@ -76,19 +120,29 @@ $().ready(function() {
                     var table = new ArvTable("test", "single", columns, node.rows, 30, 30);
 
                     var pos = {left:50+10*nodes.length, top:50+10*nodes.length};
-                    table.draw(canvas, pos);
+                    table.draw($container, pos);
                     //last_table = table;
 
                     var node = {width:table.width+40, height:table.height+40,
                     /*x:pos.left, y:pos.top,*/ old_x:pos.left, old_y:pos.top, table:table, node_name:node.node_name};
                     nodes.push(node);
                     node_hash[node.node_name] = node;
+
+
                 }
+
+
+
 
                 layout();
 
+                for(var i=0; i<nodes.length; i++){
+                    var node = nodes[i];
+                    node.table.$canvas.call(drag);
+                }
+
                 // arrow at the end
-                canvas.append("svg:defs").selectAll("marker")
+                $container.append("svg:defs").selectAll("marker")
                     .data(["end"])      // Different link/path types can be defined here
                     .enter().append("svg:marker")    // This section adds in the arrows
                     .attr("id", String)
@@ -102,7 +156,7 @@ $().ready(function() {
                     .attr("d", "M10,3L0,0L10,-3");
 
                 //arrow at the start
-                canvas.append("svg:defs").selectAll("marker")
+                $container.append("svg:defs").selectAll("marker")
                     .data(["start"])      // Different link/path types can be defined here
                     .enter().append("svg:marker")    // This section adds in the arrows
                     .attr("id", String)
@@ -125,7 +179,7 @@ $().ready(function() {
                     link.end_y = link.end_node.y;
                 }
 
-                var $link = canvas.selectAll(".link");
+                var $link = $container.selectAll(".link");
                 $link.data(relationData.links)
                     .enter()
                     .append("path")
@@ -155,7 +209,7 @@ $().ready(function() {
                         }
                     });
 
-                var text = canvas.selectAll(".text")
+                var text = $container.selectAll(".text")
                     .data(relationData.links)
                     .enter()
                     .append("text")
@@ -176,6 +230,7 @@ $().ready(function() {
                         return link.relation;
                     });
 
+
                 /*for(var i=0; i<relationData.links.length; i++) {
                     var link = relationData.links[i];
                     var start_node = node_hash[link.start];
@@ -195,7 +250,7 @@ $().ready(function() {
                         .x(function(d) { return d.x; })
                         .y(function(d) { return d.y; })
                         .interpolate("bundle");
-                    var lineGraph = canvas.append("path")
+                    var lineGraph = $container.append("path")
                         .attr("d", lineFunction(lineData))
                         .attr("stroke", "slategray")
                         .attr("stroke-width", "1.5px")
@@ -209,6 +264,7 @@ $().ready(function() {
             }
         });
     };
+
 
     renderRelations("project_user", 1);
 
@@ -233,7 +289,7 @@ $().ready(function() {
                 var table = new ArvTable("test", "single", columns, tableData.rows, 30, 30);
 
                 var pos = {left:200+10*nodes.length, top:200+10*nodes.length};
-                table.draw(canvas, pos);
+                table.draw($container, pos);
                 last_table = table;
 
                 var node = {width:table.width, height:table.height,
@@ -289,7 +345,7 @@ $().ready(function() {
         ];
         var table = new ArvTable("test", "single", columns, dataRows, 30, 30);
         var pos = {left:10, top:10};
-        table.draw(canvas, pos);
+        table.draw($container, pos);
 
         var node = {width:table.width, height:table.height,
             x:pos.left, y:pos.top, old_x:pos.left, old_y:pos.top, table:table};
