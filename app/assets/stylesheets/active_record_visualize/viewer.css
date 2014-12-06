@@ -47,6 +47,7 @@ svg {
     stroke-opacity: 0.6;
     fill: none;
     stroke-width: 1.5px;
+    pointer-events: none;
 }
 
 .text{
@@ -57,4 +58,5 @@ svg {
     //opacity: 0.6;
     fill: black;
     font: 15px sans-serif;
+    pointer-events: none;
 }

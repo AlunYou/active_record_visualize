@@ -25,6 +25,7 @@ $.extend(table.prototype, {
             .attr("id", this.id)
             .attr("width", this.width)
             .attr("height", this.height)
+            .attr("class", "table")
             .attr("transform", "translate(" + position.left + "," + position.top + ")");
 
         this.headerGrp = this.$canvas.append("g").attr("class", "headerGrp");

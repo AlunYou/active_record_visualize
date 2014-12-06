@@ -8,10 +8,24 @@
 //= require active_record_visualize/Table
 
 var nodes = [];
+var node_hash = {};
+var links = [];
 var force;
 $().ready(function() {
     var w = 1024, h = 550;
     var $container;
+
+    function linkPathContent(link) {
+        var dx = link.end_x - link.start_x,
+            dy = link.end_y - link.start_y,
+            dr = Math.sqrt(dx * dx + dy * dy);
+        if (link.end_x >= link.start_x) {
+            return "M" + link.start_x + "," + link.start_y + "A" + dr + "," + dr + " 0 0,1 " + link.end_x + "," + link.end_y;
+        }
+        else {
+            return "M" + link.end_x + "," + link.end_y + "A" + dr + "," + dr + " 0 0,1 " + link.start_x + "," + link.start_y;
+        }
+    }
 
     function zoomed() {
         $container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -22,7 +36,44 @@ $().ready(function() {
     }
 
     function dragged(d) {
-        d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
+        var trans = getTransform(d);
+        d.table.$canvas.attr("transform", "translate(" + (trans[0]+d3.event.dx) + "," + (trans[1]+d3.event.dy) + ")");
+        //update links and texts connected with this node
+        for(var i=0; i<links.length; i++) {
+            var link = links[i];
+
+            if(link.start === d['node_name'] || link.end === d['node_name']){
+                link.start_node = node_hash[link.start];
+                link.end_node = node_hash[link.end];
+                var end_dx = d3.event.dx;
+                var end_dy = d3.event.dy;
+                var start_dx = 0;
+                var start_dy = 0;
+                if(link.start === d['node_name']){
+                    start_dx = d3.event.dx;
+                    start_dy = d3.event.dy;
+                    end_dx = 0;
+                    end_dy = 0;
+                }
+                link.start_x += start_dx;
+                link.start_y += start_dy;
+                link.end_x += end_dx;
+                link.end_y += end_dy;
+
+                d3.select("#"+link.start+"_"+link.end)
+                    .attr("marker-start", function(link) {
+                        if(link.end_x < link.start_x) {
+                            return "url(#end)";
+                        }
+                    })
+                    .attr("marker-end", function(link) {
+                        if(link.end_x >= link.start_x) {
+                            return "url(#start)";
+                        }
+                    })
+                    .attr("d", linkPathContent);
+            }
+        }
     }
 
     function dragEnded(d) {
@@ -34,7 +85,6 @@ $().ready(function() {
         .on("zoom", zoomed);
 
     var drag = d3.behavior.drag()
-        .origin(function(d) { return d; })
         .on("dragstart", dragStarted)
         .on("drag", dragged)
         .on("dragend", dragEnded);
@@ -50,8 +100,6 @@ $().ready(function() {
         .attr("height", h)
         .style("fill", "none")
         .style("pointer-events", "all");
-    //rect.call(zoom);
-
 
     var layout = function(){
         force = d3.layout.no_collision_force({
@@ -64,9 +112,6 @@ $().ready(function() {
         .charge(function(d, i) { return i ? 0 : -2000; })
         .nodes(nodes)
         .size([w, h]);
-
-       // var drag = setupDrag();
-        //force.enter().call(drag);
 
         force.start();
         for(var i=0; i<100; i++){
@@ -90,9 +135,7 @@ $().ready(function() {
         trans = trans.replace(")", "");
         var values = trans.split(",");
         return [parseFloat(values[0]), parseFloat(values[1])];
-    }
-
-
+    };
 
     var renderRelations = function(table_name, id){
         $.ajax({
@@ -101,7 +144,6 @@ $().ready(function() {
             data: {table_name:table_name, id:id},
             success: function (relationData) {
                 //links = relationData.links;
-                var node_hash = {};
                 for(var i=0; i<relationData.nodes.length; i++){
                     var node = relationData.nodes[i];
 
@@ -118,28 +160,24 @@ $().ready(function() {
                     })
 
                     var table = new ArvTable("test", "single", columns, node.rows, 30, 30);
-
                     var pos = {left:50+10*nodes.length, top:50+10*nodes.length};
                     table.draw($container, pos);
-                    //last_table = table;
 
                     var node = {width:table.width+40, height:table.height+40,
                     /*x:pos.left, y:pos.top,*/ old_x:pos.left, old_y:pos.top, table:table, node_name:node.node_name};
                     nodes.push(node);
                     node_hash[node.node_name] = node;
-
-
                 }
+                links = relationData.links;
 
-
-
+                d3.selectAll(".table")
+                    .datum(function(previous_d, i){
+                        var node = nodes[i];
+                        return node;
+                    })
+                    .call(drag);
 
                 layout();
-
-                for(var i=0; i<nodes.length; i++){
-                    var node = nodes[i];
-                    node.table.$canvas.call(drag);
-                }
 
                 // arrow at the end
                 $container.append("svg:defs").selectAll("marker")
@@ -169,8 +207,8 @@ $().ready(function() {
                     .append("svg:path")
                     .attr("d", "M-10,-3L0,0L-10,3");
 
-                for(var i=0; i<relationData.links.length; i++) {
-                    var link = relationData.links[i];
+                for(var i=0; i<links.length; i++) {
+                    var link = links[i];
                     link.start_node = node_hash[link.start];
                     link.end_node = node_hash[link.end];
                     link.start_x =  link.start_node.x + link.start_node.table.getLeftOfColumnName(link.rel_column) + 10;
@@ -180,7 +218,7 @@ $().ready(function() {
                 }
 
                 var $link = $container.selectAll(".link");
-                $link.data(relationData.links)
+                $link.data(links)
                     .enter()
                     .append("path")
                     .attr("id", function(link){
@@ -197,20 +235,10 @@ $().ready(function() {
                             return "url(#start)";
                         }
                     })
-                    .attr("d", function(link) {
-                        var dx = link.end_x - link.start_x,
-                            dy = link.end_y - link.start_y,
-                            dr = Math.sqrt(dx * dx + dy * dy);
-                        if(link.end_x >= link.start_x){
-                            return "M" + link.start_x + "," + link.start_y + "A" + dr + "," + dr + " 0 0,1 " + link.end_x + "," + link.end_y;
-                        }
-                        else{
-                            return "M" + link.end_x + "," + link.end_y + "A" + dr + "," + dr + " 0 0,1 " + link.start_x + "," + link.start_y;
-                        }
-                    });
+                    .attr("d", linkPathContent);
 
                 var text = $container.selectAll(".text")
-                    .data(relationData.links)
+                    .data(links)
                     .enter()
                     .append("text")
                     .attr("class", "text")
@@ -229,34 +257,6 @@ $().ready(function() {
                     .text(function(link){
                         return link.relation;
                     });
-
-
-                /*for(var i=0; i<relationData.links.length; i++) {
-                    var link = relationData.links[i];
-                    var start_node = node_hash[link.start];
-                    var end_node   = node_hash[link.end];
-                    if(link.rel_column !== "collection"){
-
-                    }
-                    var start_trans = getTransform(start_node);
-                    var end_trans   = getTransform(end_node);
-                    var start_x =  start_node.x + start_node.table.getLeftOfColumnName(link.rel_column) + 10;
-                    var start_y =  start_node.y + start_node.table.getTopOfRow(1) + 10;
-                    var end_x = end_node.x;
-                    var end_y = end_node.y;
-
-                    var lineData = [ { "x": start_x,   "y": start_y},  { "x": end_x,  "y": end_y}];
-                    var lineFunction = d3.svg.line()
-                        .x(function(d) { return d.x; })
-                        .y(function(d) { return d.y; })
-                        .interpolate("bundle");
-                    var lineGraph = $container.append("path")
-                        .attr("d", lineFunction(lineData))
-                        .attr("stroke", "slategray")
-                        .attr("stroke-width", "1.5px")
-                        .attr("stroke-opacity", 0.6)
-                        .attr("fill", "none");
-                }*/
             },
             error: function (resp) {
 
