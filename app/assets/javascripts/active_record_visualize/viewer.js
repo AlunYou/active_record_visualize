@@ -10,6 +10,7 @@
 //= require active_record_visualize/simple_link_visualizer
 //= require active_record_visualize/table_node_visualizer
 //= require active_record_visualize/force_layouter
+//= require active_record_visualize/level_layouter
 //= require active_record_visualize/relation_viewer
 
 $().ready(function() {
