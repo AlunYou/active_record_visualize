@@ -11,9 +11,10 @@
             var bounds = this.computeBounds(nodes);
             this.quad = new QuadTree(bounds, false, options.maxDepth, options.maxChildren);
             this.collision_callback = collision_callback;
+            this.nodes = nodes;
 
-            for(var i=0; i<nodes.length; i++){
-                var node = nodes[i];
+            for(var i=0; i<this.nodes.length; i++){
+                var node = this.nodes[i];
                 this.quad.insert(node);
             }
             if(options.detect){
@@ -23,8 +24,8 @@
 
         CollisionDetect.prototype.detectAll = function() {
             var has_collision = false;
-            for(var i=0; i<nodes.length; i++){
-                var node = nodes[i];
+            for(var i=0; i<this.nodes.length; i++){
+                var node = this.nodes[i];
                 var items = this.quad.retrieve(node);
                 for(var j=0; j<items.length; j++){
                     var collision_item = items[j];
@@ -81,7 +82,7 @@
         var no_collision_force = d3.layout.force();
         no_collision_force.on("tick", function(e) {
             var collision_callback = options.layout_for === "rect" ? rect_collision_callback : circle_collision_callback;
-            var collision_detect = new CollisionDetect(nodes, collision_callback, options);
+            var collision_detect = new CollisionDetect(options.nodes, collision_callback, options);
             no_collision_force.hasCollision = collision_detect.detectAll();
 
             if(options.redrawCallback){
@@ -150,7 +151,7 @@
                 else {
                     var tt2 = 0;
                 }
-                console.log("translate: " + min);
+                //console.log("translate: " + min);
             }
         }
     }
