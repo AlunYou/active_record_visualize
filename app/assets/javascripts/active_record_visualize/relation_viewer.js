@@ -64,7 +64,7 @@
             })
             .call(drag);
 
-        //this.layouter.layout(this.nodes, this.w, this.h);
+        this.layouter.layout(this.nodes, this.w, this.h);
     };
 
     RelationViewer.prototype.initLinks = function(){

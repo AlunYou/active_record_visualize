@@ -10,6 +10,7 @@
 //= require active_record_visualize/simple_link_visualizer
 //= require active_record_visualize/table_node_visualizer
 //= require active_record_visualize/force_layouter
+//= require active_record_visualize/level_layouter
 //= require active_record_visualize/relation_viewer
 
 $().ready(function() {
@@ -49,7 +50,8 @@ $().ready(function() {
 
                 var nodeVisualizer = new TableNodeVisualizer();
                 var linkVisualizer = new SimpleLinkVisualizer();
-                var forceLayouter = new ForceLayouter();
+                //var forceLayouter = new ForceLayouter();
+                var forceLayouter = new LevelLayouter();
                 var relation_viewer = new RelationViewer(nodes, links, nodeVisualizer, linkVisualizer,
                     forceLayouter, $container, w, h);
                 relation_viewer.draw();

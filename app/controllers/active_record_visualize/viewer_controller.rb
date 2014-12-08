@@ -94,6 +94,8 @@ module ActiveRecordVisualize
       node_name = row_hash[:node_name]
 
       if(@nodes_hash[node_name].nil?)
+        row_hash[:level] = @all_node_name_stack.size
+        row_hash[:index] = @return_nodes.size
         @nodes_hash[node_name] = row_hash
         @return_nodes.push(row_hash)
       end
