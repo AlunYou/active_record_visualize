@@ -20,7 +20,13 @@
         table.draw($container, pos);
         $.extend(node, {width:table.width+40, height:table.height+40,
             x:pos.left, y:pos.top, old_x:pos.left, old_y:pos.top, table:table});
-    }
+    };
+
+    TableNodeVisualizer.prototype.getCellPosition = function(node, column){
+        var x = node.x + node.table.getLeftOfColumnName(column) + 10;
+        var y = node.y + node.table.getTopOfRow(1) + 10;
+        return {x:x, y:y};
+    };
 
 
     window.TableNodeVisualizer = TableNodeVisualizer;

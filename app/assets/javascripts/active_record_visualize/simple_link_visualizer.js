@@ -15,9 +15,10 @@
 
     var SimpleLinkVisualizer = function(){};
 
-    SimpleLinkVisualizer.prototype.draw = function($container, link){
-        link.start_x =  link.start_node.x + link.start_node.table.getLeftOfColumnName(link.rel_column) + 10;
-        link.start_y =  link.start_node.y + link.start_node.table.getTopOfRow(1) + 10;
+    SimpleLinkVisualizer.prototype.draw = function($container, link, nodeVisualizer){
+        var start = nodeVisualizer.getCellPosition(link.start_node, link.rel_column);
+        link.start_x =  start.x;//link.start_node.x + link.start_node.table.getLeftOfColumnName(link.rel_column) + 10;
+        link.start_y =  start.y;//link.start_node.y + link.start_node.table.getTopOfRow(1) + 10;
         link.end_x = link.end_node.x;
         link.end_y = link.end_node.y;
 

@@ -74,6 +74,7 @@ module ActiveRecordVisualize
       @return_nodes = []
       @return_links = []
       @nodes_hash = {}
+      @links_hash = {}
       @all_node_name_stack = []
 
       get_relation_recursive(nil, table_name, id, nil, nil)
@@ -111,8 +112,12 @@ module ActiveRecordVisualize
         elsif(macro == :has_many)
           rel_column = 'collection'
         end
-        link = {start:@last_node_name, end:node_name, relation:macro, rel_column:rel_column}
-        @return_links.push link
+        key = "#{@last_node_name}~#{node_name}"
+        if(@links_hash[key].nil?)
+          link = {start:@last_node_name, end:node_name, relation:macro, rel_column:rel_column}
+          @links_hash[key] = link
+          @return_links.push link
+        end
       end
 
       if(id)

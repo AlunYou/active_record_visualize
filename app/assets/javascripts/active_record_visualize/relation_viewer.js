@@ -1,3 +1,13 @@
+/*
+* nodeVisualizer interfaces:
+*   draw($container, node);
+* linkVisualizer interfaces:
+*   draw($container, link);
+*   refreshPos(links, node, dx, dy);//called when node position changes
+* layouter interfaces:
+*   layout(nodes, w, h);
+* */
+
 (function () {
     "use strict";
 
@@ -72,7 +82,7 @@
             var link = this.links[i];
             link.start_node = node_hash[link.start];
             link.end_node = node_hash[link.end];
-            this.linkVisualizer.draw(this.$container, link);
+            this.linkVisualizer.draw(this.$container, link, this.nodeVisualizer);
         }
         var self = this;
         Events.on("node_move", function(node, dx, dy){
