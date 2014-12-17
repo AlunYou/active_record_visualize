@@ -33,10 +33,12 @@
 //sub-module TableRow
 (function () {
     "use strict";
-    var TableRow = function(rowIndex, table, cells){
+    var TableRow = function(rowIndex, cells){
         this.rowIndex = rowIndex;
-        this.table = table;
         this.cells = cells;
+        $.each(this.cells, function(index, cell){
+            cell.row = this;
+        });
     };
     TableRow.prototype.draw = function($container){
         var $rowContainer = $container.append("svg:g")
@@ -76,6 +78,9 @@
     var TableBase = function(rows, columnArray){
         this.rows = rows;
         this.columnArray = columnArray;
+        $.each(this.rows, function(index, row){
+            row.table = this;
+        });
     };
 
     TableBase.prototype.getCell = function(rowIndex, colIndex){
@@ -186,11 +191,12 @@
             dataCells.push(dataCell);
             if(colIndex === columnNum - 1){
                 var row = new TableRow(2+rowIndex, this, dataCells);
-                dataCell.row = row;
                 this.rows.push(row);
             }
         }
-
+        $.each(this.rows, function(index, row){
+            row.table = this;
+        });
     };
     SimpleTableBase.prototype = new TableBase();
     window.SimpleTableBase = SimpleTableBase;
