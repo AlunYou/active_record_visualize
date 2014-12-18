@@ -15,7 +15,25 @@
                 }
             })
         });
-        var table = new ArvTable("test", "single", columns, node.rows, 30, 30);
+        var table;
+        if(node.rows.length == 1){
+            var titleHeight = 30, headerHeight = 30, rowHeight = 30,
+                title = "Table";
+            var hortNum = 2;
+            var dataArray = node.rows[0];
+            var columnArray = [];
+            $.each(dataArray, function(key, value){
+                columnArray.push({title:key, width:150});
+            })
+            table = new ObjectTableBase();
+            table.initialize(titleHeight, headerHeight, rowHeight,
+                    title, columnArray, dataArray, hortNum);
+        }
+        else{
+            table = new ArvTable("test", "single", columns, node.rows, 30, 30);
+        }
+
+
         var pos = {left:node.x?node.x:0, top:node.y?node.y:0};
         table.draw($container, pos);
         $.extend(node, {width:table.width+40, height:table.height+40,

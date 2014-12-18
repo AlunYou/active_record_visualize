@@ -66,4 +66,10 @@ svg {
     font: 15px sans-serif;
     pointer-events: none;
 }
+.cell text.hint{
+
+        fill: #CCCCCC;
+
+}
+
 
