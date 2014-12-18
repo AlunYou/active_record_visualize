@@ -9,6 +9,7 @@
 //= require active_record_visualize/Table
 //= require active_record_visualize/simple_link_visualizer
 //= require active_record_visualize/table_node_visualizer
+//= require active_record_visualize/TableBase
 //= require active_record_visualize/force_layouter
 //= require active_record_visualize/level_layouter
 //= require active_record_visualize/relation_viewer
@@ -63,7 +64,65 @@ $().ready(function() {
     };
 
 
-    renderRelations("project_user", 1);
+    //renderRelations("project_user", 1);
+
+    function render_simple() {
+
+        var titleHeight = 30, headerHeight = 30, rowHeight = 30,
+            title = "Table";
+        var columnArray = [
+            {
+                "width": 100,
+                "title": "Id"
+            },
+            {
+                "width": 150,
+                "title": "Name"
+            },
+            {
+                "width": 250,
+                "title": "Start Date"
+            }
+        ];
+        var dataArray = [
+            {
+                "Id": 3,
+                "Name": "Richy",
+                "Start Date": "2010-4-5"
+            },
+            {
+                "Id": 4,
+                "Name": "Fei",
+                "Start Date": "2010-4-15"
+            },
+            {
+                "Id": 5,
+                "Name": "Jane",
+                "Start Date": "2014-4-15"
+            }
+        ];
+        var table = new SimpleTableBase(titleHeight, headerHeight, rowHeight,
+            title, columnArray, dataArray);
+        table.draw($container);
+
+        /*var colJson = [
+            {"dbTableName": "Project", "dbFieldName": "id", "title": "Id", valueType: "text", linkType: "static", width: 100},
+            {"dbTableName": "Project", "dbFieldName": "name", "title": "Name", valueType: "text", linkType: "static", width: 150},
+            {"dbTableName": "Project", "dbFieldName": "start_date", "title": "Start Date", valueType: "text", linkType: "static", width: 200}
+        ];
+        var columns = $.map(colJson, function (col, index) {
+            return new ArvColumnDef(col.dbTableName, col.dbFieldName, col.title, col.valueType, col.linkType, col.width);
+        });
+
+        var table = new ArvTable("test", "single", columns, dataRows, 30, 30);
+        var pos = {left: 10, top: 10};
+        table.draw($container, pos);
+
+        var node = {width: table.width, height: table.height,
+            x: pos.left, y: pos.top, old_x: pos.left, old_y: pos.top, table: table};*/
+    }
+
+    render_simple();
 
     /*
     function render_simple(){
@@ -99,5 +158,6 @@ $().ready(function() {
             x:pos.left, y:pos.top, old_x:pos.left, old_y:pos.top, table:table};
         nodes.push(node);
     }*/
+
 });
 

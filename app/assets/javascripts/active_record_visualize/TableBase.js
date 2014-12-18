@@ -36,8 +36,9 @@
     var TableRow = function(rowIndex, cells){
         this.rowIndex = rowIndex;
         this.cells = cells;
+        var self = this;
         $.each(this.cells, function(index, cell){
-            cell.row = this;
+            cell.row = self;
         });
     };
     TableRow.prototype.draw = function($container){
@@ -50,11 +51,11 @@
     };
 
     TableRow.prototype.getCellByColIndex = function(colIndex){
-        $.each(this.cells, function(index, cell){
-            if(cell.columnIndex === colIndex){
-                return cell;
+        for(var i=0; i<this.cells.length; i++){
+            if(this.cells[i].columnIndex === colIndex){
+                return this.cells[i];
             }
-        });
+        }
         return null;
     };
 
@@ -78,8 +79,9 @@
     var TableBase = function(rows, columnArray){
         this.rows = rows;
         this.columnArray = columnArray;
+        var self = this;
         $.each(this.rows, function(index, row){
-            row.table = this;
+            row.table = self;
         });
     };
 
@@ -92,14 +94,27 @@
         var cell = this.getCell(rowIndex, colIndex);
         var size = cell.getSize();
         $cellContainer.append("rect")
-            .attr("width", size.width)
+            .attr("width", size.width - 1)
             .attr("height", size.height - 1);
+
+        var colName = this.columnArray[colIndex].title;
+        var text;
+        if(rowIndex === 0 ){
+            text = this.title;
+        }
+        else if(rowIndex == 1){
+            text = colName;
+        }
+        else{
+            var row = this.dataArray[rowIndex - 2];
+            text = row[colName];
+        }
 
         $cellContainer.append("text")
             .attr("x", size.width / 2)
             .attr("y", size.height / 2)
             .attr("dy", ".35em")
-            .text("he");
+            .text(text);
         //.text(String);
     };
     TableBase.prototype.draw = function($container){
@@ -173,32 +188,31 @@
         var columnNum = columnArray.length;
 
         var titleCell = new TableCell(0, columnNum, this.title);
-        this.rows.push(new TableRow(0, this, [titleCell]));
+        this.rows.push(new TableRow(0, [titleCell]));
 
         var headerCells = [];
         for(var i=0; i<columnNum; i++){
             var headerCell = new TableCell(i, 1, columnArray[i]);
             headerCells.push(headerCell);
         }
-        this.rows.push(new TableRow(1, this, headerCells));
+        this.rows.push(new TableRow(1, headerCells));
 
-        var dataCells = [];
         var dataNum = this.dataArray.length;
         for(var i=0; i<dataNum; i++){
-            var colIndex = dataNum % columnNum;
-            var rowIndex = dataNum / columnNum;
-            var dataCell = new TableCell(colIndex, 1, this.dataArray[i]);
-            dataCells.push(dataCell);
-            if(colIndex === columnNum - 1){
-                var row = new TableRow(2+rowIndex, this, dataCells);
-                this.rows.push(row);
+            var dataCells = [];
+            for(var j=0; j<columnNum; j++){
+                var dataCell = new TableCell(j, 1);
+                dataCells.push(dataCell);
             }
+            var row = new TableRow(2+i, dataCells);
+            this.rows.push(row);
         }
+        var self = this;
         $.each(this.rows, function(index, row){
-            row.table = this;
+            row.table = self;
         });
     };
-    SimpleTableBase.prototype = new TableBase();
+    SimpleTableBase.prototype = new TableBase([], []);
     window.SimpleTableBase = SimpleTableBase;
     return SimpleTableBase;
 }());
