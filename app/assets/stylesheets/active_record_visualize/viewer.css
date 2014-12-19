@@ -30,6 +30,8 @@ svg {
     pointer-events: all;
 }
 
+
+
 .header rect {
     fill: #0099FF;
 }
@@ -66,10 +68,37 @@ svg {
     font: 15px sans-serif;
     pointer-events: none;
 }
-.cell text.hint{
 
-        fill: #CCCCCC;
 
+
+.title-row rect{
+    fill: #0099FF;
+    opacity: 1;
 }
+.title-row text{
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: middle;
+}
+
+.header-row rect{
+    fill: #0099FF;
+    opacity: 1;
+}
+.header-row text{
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: middle;
+}
+
+.cell text.hint{
+    fill: #666;
+}
+
+.object .cell text{
+    text-anchor: start;
+}
+
+
 
 
