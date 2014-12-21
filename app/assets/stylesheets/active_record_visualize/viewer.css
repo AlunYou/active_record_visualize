@@ -50,38 +50,28 @@ svg {
 }
 
 
-.row rect, .row path{
-    fill: #66FFFF;
+.row .cell-background{
+    fill: rgb(239, 243, 249);//rgb(242,230,172);
     opacity: 1;
 }
 .row text{
-    fill: white;
+    fill: black;
     font: 10px sans-serif;
     text-anchor: middle;
 }
 
-.title-row rect, .title-row path{
-    fill: #0099FF;
+.title-row .cell-background{
+    fill: #ccc;
     opacity: 1;
 }
-.title-row text{
-    fill: white;
-    font: 10px sans-serif;
-    text-anchor: middle;
-}
 
-.header-row rect, .header-row path{
-    fill: #0099FF;
+.header-row .cell-background{
+    fill: #ddd;
     opacity: 1;
 }
-.header-row text{
-    fill: white;
-    font: 10px sans-serif;
-    text-anchor: middle;
-}
 
-.cell text.hint{
-    fill: #666;
+text.hint{
+    fill: #999;
 }
 
 .object .cell text{
@@ -94,12 +84,12 @@ svg {
 
 }
 .table-background{
-    fill: #94d31b;
-    stroke: #94d31b;
+    fill: black;
+    stroke: black;
     stroke-width: 4px;
 }
 
-.table .border{
-    stroke: red;
+.row .border{
+    stroke: #666;
     stroke-width: 1px;
 }

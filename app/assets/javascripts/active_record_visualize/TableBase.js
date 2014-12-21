@@ -30,10 +30,12 @@
                 br = true;
             }
         }
-        new SVGHelper().drawRect($cellContainer, size.width, size.height,
+        var $background = new SVGHelper().drawRect($cellContainer, size.width, size.height,
             this.row.table.border_radius, tl, tr, bl, br);
+        $background.attr("class", "cell-background");
         this.row.table.renderCellData(this.row.rowIndex, this.columnIndex, $cellContainer);
 
+        //border-right
         if(this.columnIndex + this.span - 1 != this.row.table.columnArray.length - 1){
             $cellContainer.append("line")
                 .attr("class", "border")
@@ -87,6 +89,7 @@
             cell.draw($rowContainer);
         });
 
+        //border-bottom
         if(this.rowIndex != this.table.rows.length - 1){
             $rowContainer.append("line")
                 .attr("class", "border")
@@ -385,12 +388,12 @@
 
                 $cellContainer.append("text")
                     .attr("class", "hint")
-                    .attr("x", 0)//size.width / 2)
+                    .attr("x", 2)//size.width / 2)
                     .attr("y", size.height / 4 * 1)
                     .attr("dy", ".35em")
                     .text(columnName);
                 $cellContainer.append("text")
-                    .attr("x", 0)//size.width / 2)
+                    .attr("x", 20)//size.width / 2)
                     .attr("y", size.height / 4 * 3)
                     .attr("dy", ".35em")
                     .text(text);
