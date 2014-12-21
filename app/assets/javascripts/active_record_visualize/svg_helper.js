@@ -45,6 +45,50 @@
         return retval;
     }
 
+    SVGHelper.prototype.perfectEllipsis = function(selector, maxWidth) {
+        for(var i=0; i<selector.length; i++){
+            var textObject = selector[i];
+            var $text = $(textObject);
+            var textString = $text.attr("full-text");
+            if(!textString){
+                textString = textObject.textContent;
+                $text.attr("full-text", textString);
+            }
+
+            if (!textString) {
+                textObject.textContent = '';
+                continue;
+            }
+
+            textObject.textContent = textString;
+            maxWidth = maxWidth;// || sldConst.TEXT_WIDTH;
+            var strLength = textString.length;
+            var width = textObject.getSubStringLength(0, strLength);
+
+            // ellipsis is needed
+            if (width >= maxWidth) {
+                textObject.textContent = '...' + textString;
+                strLength += 3;
+
+                // guess truncate position
+                var i = Math.floor(strLength * maxWidth / width) + 1;
+
+                // refine by expansion if necessary
+                while (++i < strLength && textObject.getSubStringLength(0, i) < maxWidth);
+
+                // refine by reduction if necessary
+                while (--i > 3 && textObject.getSubStringLength(0, i) > maxWidth);
+
+                textObject.textContent = textString.substring(0, i-3) + '...';
+                //add built-in tooltip
+                if($text[0].classList.contains("value")){
+                    var $rect = $text.parent().find(".cell-background");
+                    $rect.html("<title>" + textString + "</title>");
+                }
+            }
+        }
+    }
+
     window.SVGHelper = SVGHelper;
     return SVGHelper;
 }());

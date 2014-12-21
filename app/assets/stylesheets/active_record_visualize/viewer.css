@@ -38,12 +38,7 @@ svg {
     pointer-events: none;
 }
 
-.text{
-    //stroke: slategray;
-    //stroke-width: 1.5px;
-    //color: slategray;
-    //stroke-opacity: 0.6;
-    //opacity: 0.6;
+.text, text {
     fill: black;
     font: 15px sans-serif;
     pointer-events: none;
@@ -57,7 +52,7 @@ svg {
 .row text{
     fill: black;
     font: 10px sans-serif;
-    text-anchor: middle;
+    text-anchor: start;
 }
 
 .title-row .cell-background{

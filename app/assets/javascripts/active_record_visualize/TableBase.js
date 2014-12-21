@@ -44,6 +44,8 @@
                 .attr("x2", size.width)
                 .attr("y2", size.height);
         }
+        var sel = $($cellContainer[0][0]).find("text");
+        new SVGHelper().perfectEllipsis(sel, size.width-2);
     };
 
     TableCell.prototype.getSize = function(){
@@ -169,7 +171,8 @@
         }
 
         $cellContainer.append("text")
-            .attr("x", size.width / 2)
+            .attr("class", "value")
+            .attr("x", 2)//size.width / 2)
             .attr("y", size.height / 2)
             .attr("dy", ".35em")
             .text(text);
@@ -374,6 +377,7 @@
             text = this.title;
 
             $cellContainer.append("text")
+                .attr("class", "value")
                 .attr("x", size.width / 2)
                 .attr("y", size.height / 2)
                 .attr("dy", ".35em")
@@ -393,6 +397,7 @@
                     .attr("dy", ".35em")
                     .text(columnName);
                 $cellContainer.append("text")
+                    .attr("class", "value")
                     .attr("x", 20)//size.width / 2)
                     .attr("y", size.height / 4 * 3)
                     .attr("dy", ".35em")

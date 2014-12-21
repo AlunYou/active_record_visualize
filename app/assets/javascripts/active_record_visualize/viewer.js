@@ -36,6 +36,8 @@ $().ready(function() {
         .attr("y", "-50000px")
         .style("fill", "none")
         .style("pointer-events", "all");
+    $container.append("text")
+        .attr("class", "hidden-text");
     $container.append("svg:defs").html(
             '<filter id="drop-shadow" height="130%">' +
             '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' + <!-- stdDeviation is how much to blur -->
