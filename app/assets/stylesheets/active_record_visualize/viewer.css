@@ -30,26 +30,6 @@ svg {
     pointer-events: all;
 }
 
-
-
-.header rect {
-    fill: #0099FF;
-}
-.header text {
-    fill: white;
-    font: 10px sans-serif;
-    text-anchor: middle;
-}
-.cell rect {
-    fill: #66FFFF;
-    opacity:0.5;
-}
-.cell text {
-    fill: black;
-    font: 10px sans-serif;
-    text-anchor: middle;
-}
-
 .link {
     stroke: slategray;
     stroke-opacity: 0.6;
@@ -70,8 +50,17 @@ svg {
 }
 
 
+.row rect, .row path{
+    fill: #66FFFF;
+    opacity: 1;
+}
+.row text{
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: middle;
+}
 
-.title-row rect{
+.title-row rect, .title-row path{
     fill: #0099FF;
     opacity: 1;
 }
@@ -81,7 +70,7 @@ svg {
     text-anchor: middle;
 }
 
-.header-row rect{
+.header-row rect, .header-row path{
     fill: #0099FF;
     opacity: 1;
 }
@@ -99,6 +88,18 @@ svg {
     text-anchor: start;
 }
 
+.table{
+    -webkit-filter: drop-shadow(0 1px 10px rgba(113,158,206,0.8));
+    filter: url(#drop-shadow);
 
+}
+.table-background{
+    fill: #94d31b;
+    stroke: #94d31b;
+    stroke-width: 4px;
+}
 
-
+.table .border{
+    stroke: red;
+    stroke-width: 1px;
+}

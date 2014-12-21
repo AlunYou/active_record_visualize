@@ -5,6 +5,7 @@
 //= require active_record_visualize/events
 //= require active_record_visualize/sized_quadtree
 //= require active_record_visualize/d3.layout.no_collision_force
+//= require active_record_visualize/svg_helper
 //= require active_record_visualize/ColumnDef
 //= require active_record_visualize/Table
 //= require active_record_visualize/simple_link_visualizer
@@ -35,6 +36,15 @@ $().ready(function() {
         .attr("y", "-50000px")
         .style("fill", "none")
         .style("pointer-events", "all");
+    $container.append("svg:defs").html(
+            '<filter id="drop-shadow" height="130%">' +
+            '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' + <!-- stdDeviation is how much to blur -->
+            '<feOffset dx="2" dy="2" result="offsetblur"/>' + <!-- how much to offset -->
+            '<feMerge>' +
+            '    <feMergeNode/>' + <!-- this contains the offset blurred image -->
+            '    <feMergeNode in="SourceGraphic"/>' + <!-- this contains the element that the filter is applied to -->
+            '</feMerge>' +
+            '</filter>');
     var $body = $(document);
     w = $body.width();
     h = $body.height();

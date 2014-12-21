@@ -11,12 +11,37 @@
     TableCell.prototype.draw = function($container){
         var $cellContainer = $container.append("svg:g")
             .attr("class", "cell")
-            .attr("transform", "translate(" + this.row.table.getLeftOfColumn(this.columnIndex) + ",0)");
+            .attr("transform", "translate(" + (this.row.table.getLeftOfColumn(this.columnIndex)+0) + ",0)");
         var size = this.getSize();
-        $cellContainer.append("rect")
-            .attr("width", size.width - 1)
-            .attr("height", size.height - 1);
+        var tl=false, tr=false, bl=false, br=false;
+        if(this.columnIndex == 0){
+            if(this.row.rowIndex == 0){
+                tl = true;
+            }
+            if(this.row.rowIndex == this.row.table.rows.length - 1){
+                bl = true;
+            }
+        }
+        if(this.columnIndex + this.span - 1 == this.row.table.columnArray.length - 1){
+            if(this.row.rowIndex == 0){
+                tr = true;
+            }
+            if(this.row.rowIndex == this.row.table.rows.length - 1){
+                br = true;
+            }
+        }
+        new SVGHelper().drawRect($cellContainer, size.width, size.height,
+            this.row.table.border_radius, tl, tr, bl, br);
         this.row.table.renderCellData(this.row.rowIndex, this.columnIndex, $cellContainer);
+
+        if(this.columnIndex + this.span - 1 != this.row.table.columnArray.length - 1){
+            $cellContainer.append("line")
+                .attr("class", "border")
+                .attr("x1", size.width)
+                .attr("y1", 0)
+                .attr("x2", size.width)
+                .attr("y2", size.height);
+        }
     };
 
     TableCell.prototype.getSize = function(){
@@ -51,12 +76,25 @@
         });
     };
     TableRow.prototype.draw = function($container){
+        var top = this.table.getTopOfRow(this.rowIndex);
         var $rowContainer = $container.append("svg:g")
             .attr("class", this.classNames + " row")
-            .attr("transform", "translate(0," + this.table.getTopOfRow(this.rowIndex) + ")");
+            .attr("transform", "translate(0," + (top+0) + ")");
+        var size = this.getSize();
+
+
         $.each(this.cells, function(index, cell){
             cell.draw($rowContainer);
         });
+
+        if(this.rowIndex != this.table.rows.length - 1){
+            $rowContainer.append("line")
+                .attr("class", "border")
+                .attr("x1", 0)
+                .attr("y1", size.height)
+                .attr("x2", size.width)
+                .attr("y2", size.height);
+        }
     };
 
     TableRow.prototype.getCellByColIndex = function(colIndex){
@@ -102,6 +140,7 @@
         $.each(this.rows, function(index, row){
             row.table = self;
         });
+        this.border_radius = 5;
     };
 
     TableBase.prototype.getCell = function(rowIndex, colIndex){
@@ -134,16 +173,21 @@
     };
     TableBase.prototype.draw = function($container, pos){
         this.clearDrawCache();
-        var $tableContainer = $container.append("svg:g")
-            .attr("class", this.classNames + " table")
-            .attr("transform", "translate(" + pos.left + "," + pos.top + ")");
-        $.each(this.rows, function(index, row){
-            row.draw($tableContainer);
-        });
-        this.$canvas = $tableContainer;
         var size = this.getSize();
         this.width = size.width;
         this.height = size.height;
+
+        var $tableContainer = $container.append("svg:g")
+            .attr("class", this.classNames + " table")
+            .attr("transform", "translate(" + pos.left + "," + pos.top + ")");
+        var $background = new SVGHelper().drawRect($tableContainer, size.width, size.height, this.border_radius, true, true, true, true);
+        $background.attr("class", "table-background");
+        for(var i=0; i<this.rows.length; i++){
+            var row = this.rows[i];
+            row.draw($tableContainer);
+        }
+        this.$canvas = $tableContainer;
+
     };
 
     TableBase.prototype.getSize = function(){
@@ -287,13 +331,19 @@
         this.hortNum = hortNum;
         this.classNames = "object";
 
+        this.fieldArray = [];
+        var self = this;
+        $.each(this.dataArray, function(key, value){
+            self.fieldArray.push({title:key});
+        });
+
         var rows = [];
         var columnNum = hortNum;
 
         var titleCell = new TableCell(0, columnNum, this.title);
         rows.push(new TableRow(0, [titleCell], "title-row"));
 
-        var dataNum = columnArray.length;
+        var dataNum = this.fieldArray.length;
         var dataCells = [];
         for(var i=0; i<dataNum; i++){
             var colIndex = i % columnNum;
@@ -301,14 +351,15 @@
             dataCells.push(dataCell);
 
             if(colIndex === columnNum - 1 || i === dataNum-1){
+                while(dataCells.length < columnNum){
+                    dataCells.push(new TableCell(++colIndex, 1));
+                }
                 var row = new TableRow(rows.length, dataCells, "data-row");
                 rows.push(row);
                 dataCells = [];
             }
         }
         TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames);
-
-
     };
     ObjectTableBase.prototype.renderCellData = function(rowIndex, colIndex, $cellContainer){
         var cell = this.getCell(rowIndex, colIndex);
@@ -327,34 +378,45 @@
         }
         else {
             var columnNum = this.hortNum;
-
             var indexInColumnArray = (rowIndex-1) * columnNum + colIndex;
-            columnName = this.columnArray[indexInColumnArray].title;
-            text = object[columnName];
+            if(indexInColumnArray < this.fieldArray.length){
+                columnName = this.fieldArray[indexInColumnArray].title;
+                text = object[columnName];
 
-            $cellContainer.append("text")
-                .attr("class", "hint")
-                .attr("x", 0)//size.width / 2)
-                .attr("y", size.height / 4 * 1)
-                .attr("dy", ".35em")
-                .text(columnName);
-            $cellContainer.append("text")
-                .attr("x", 0)//size.width / 2)
-                .attr("y", size.height / 4 * 3)
-                .attr("dy", ".35em")
-                .text(text);
+                $cellContainer.append("text")
+                    .attr("class", "hint")
+                    .attr("x", 0)//size.width / 2)
+                    .attr("y", size.height / 4 * 1)
+                    .attr("dy", ".35em")
+                    .text(columnName);
+                $cellContainer.append("text")
+                    .attr("x", 0)//size.width / 2)
+                    .attr("y", size.height / 4 * 3)
+                    .attr("dy", ".35em")
+                    .text(text);
+            }
         }
     };
 
     ObjectTableBase.prototype.getCellByColumnNameAndRowIndex = function(columnName, rowIndex){
         //parameter rowIndex is ignored
-        var columnIndex = this.getColumnIndexByColumnName(columnName);
+        var columnIndex = this.getFieldIndexByColumnName(columnName);
 
         var columnNum = this.hortNum;
         var rowIndex = Math.floor(columnIndex / columnNum) + 1;
         var colIndex = columnIndex % columnNum;
         return this.getCell(rowIndex, colIndex);
     }
+    ObjectTableBase.prototype.getFieldIndexByColumnName = function(name){
+        var index = -1;
+        for(var i=0; i<this.fieldArray.length; i++){
+            if(this.fieldArray[i].title === name){
+                index = i;
+                break;
+            }
+        }
+        return index;
+    };
 
     window.ObjectTableBase = ObjectTableBase;
     return ObjectTableBase;

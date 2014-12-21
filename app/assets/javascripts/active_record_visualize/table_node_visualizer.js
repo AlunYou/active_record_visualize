@@ -34,9 +34,12 @@
             var hortNum = 2;
             var dataArray = node.rows[0];
             var columnArray = [];
-            $.each(dataArray, function(key, value){
-                columnArray.push({title:key, width:150});
-            })
+            for(var i=0; i<hortNum; i++){
+                columnArray.push({title:"col"+i, width:150});
+            }
+            //$.each(dataArray, function(key, value){
+            //    columnArray.push({title:key, width:150});
+            //})
             table = new ObjectTableBase();
             table.initialize(titleHeight, headerHeight, rowHeight,
                     title, columnArray, dataArray, hortNum);
