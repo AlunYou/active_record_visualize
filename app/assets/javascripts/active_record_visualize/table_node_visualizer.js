@@ -16,6 +16,7 @@
             })
         });
         var table;
+        var self = this;
         if(node.collection){
             //table = new ArvTable("test", "single", columns, node.rows, 30, 30);
             var titleHeight = 30, headerHeight = 30, rowHeight = 30,
@@ -26,7 +27,34 @@
             });
             table = new SimpleTableBase();
             table.initialize(titleHeight, headerHeight, rowHeight,
-                title, columnArray, dataArray);
+                title, columnArray, dataArray, node.page_size, node.page_num, node.page_index);
+            Events.on("nav_page", function(eventTable, navPage, currentPage){
+                if(eventTable === table){
+                    $.ajax({
+                        type: "get",
+                        url: "/active_record_visualize/get_table_by_page?table_name=" + node.table_name
+                        + "&page_index="+navPage + "&page_size=" + node.page_size,
+                        data: {condition:node.condition},
+                        success: function (nodeData) {
+                            table.$canvas.remove();
+                            node.rows = nodeData.rows;
+                            node.page_index = nodeData.page_index;
+                            dataArray = node.rows;
+                            table.initialize(titleHeight, headerHeight, rowHeight,
+                                title, columnArray, dataArray, node.page_size, node.page_num, node.page_index);
+                            //self.draw($container, node);
+
+                            //return;
+                            var pos = {left:node.x, top:node.y};
+
+                            table.draw($container, pos);
+                        },
+                        error: function (resp) {
+                            alert("failure");
+                        }
+                    });
+                }
+            });
         }
         else{
             var titleHeight = 30, headerHeight = 30, rowHeight = 30,
@@ -42,7 +70,7 @@
             //})
             table = new ObjectTableBase();
             table.initialize(titleHeight, headerHeight, rowHeight,
-                    title, columnArray, dataArray, hortNum);
+                    title, columnArray, dataArray, hortNum, node.page_size, node.page_num, node.page_index);
         }
 
         var pos = {left:node.x?node.x:0, top:node.y?node.y:0};

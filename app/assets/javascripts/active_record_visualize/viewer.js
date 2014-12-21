@@ -52,10 +52,11 @@ $().ready(function() {
     h = $body.height();
     console.log("w,h=" + w + "," + h);
 
+    window.page_size = 2;
     var renderRelations = function(table_name, id){
         $.ajax({
             type: "get",
-            url: "/active_record_visualize/get_relations?table_name=" + table_name + "&id=" + id,
+            url: "/active_record_visualize/get_relations?table_name=" + table_name + "&id=" + id + "&page_size=" + window.page_size,
             data: {table_name:table_name, id:id},
             success: function (relationData) {
                 var nodes = relationData.nodes;

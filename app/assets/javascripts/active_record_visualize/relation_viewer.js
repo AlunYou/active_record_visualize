@@ -77,6 +77,21 @@
         this.layouter.layout(this.nodes, this.w, this.h);
     };
 
+    RelationViewer.prototype.resetNode = function(node){
+        node.table.$canvas.remove();
+        this.nodeVisualizer.draw(this.$container, node);
+
+        /*var self = this;
+        d3.selectAll(".table")
+            .datum(function(previous_d, i){
+                var node = self.nodes[i];
+                return node;
+            })
+            .call(drag);*/
+
+        //this.layouter.layout(this.nodes, this.w, this.h);
+    };
+
     RelationViewer.prototype.initLinks = function(){
         for(var i=0; i<this.links.length; i++) {
             var link = this.links[i];

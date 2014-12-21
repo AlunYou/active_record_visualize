@@ -27,7 +27,25 @@ module ActiveRecordVisualize
       models = ActiveRecord::Base.descendants
     end
 
+    def get_table_by_page
+      page_index = params[:page_index].to_i
+      page_size = params[:page_size].to_i
+      table_name = params[:table_name]
+      condition = params[:condition]
+      #ActionController::Parameters.permit_all_parameters = true
+      model = get_model_const(table_name)
+      condition = condition.permit(model.column_names)
+
+      data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
+
+      return_hash = {}
+      return_hash[:rows] = data
+      return_hash[:page_index] = page_index
+      render json:return_hash
+    end
+
     def get_table_hash(table_name, id, foreign_key, foreign_id)
+      page_size = params['page_size'].to_i
       model = get_model_const(table_name)
 
       if(id)
@@ -36,8 +54,13 @@ module ActiveRecordVisualize
       elsif(foreign_key && foreign_id)
         condition = {}
         condition[foreign_key] = foreign_id
-        data = [model.where(condition).take]
-        node_name = "#{table_name}s_foreign_#{foreign_key}_#{foreign_id}"
+        total_num = model.where(condition).count
+        page_num = total_num / page_size
+        if(total_num % page_size != 0)
+          page_num = page_num + 1
+        end
+        data = model.where(condition).limit(page_size).offset(0).to_a
+        node_name = "#{table_name}s (foreign_#{foreign_key}_#{foreign_id})"
         collection = true
       else
         data = model.all
@@ -62,13 +85,19 @@ module ActiveRecordVisualize
       return_hash[:columns] = cols
       return_hash[:rows] = data
       return_hash[:node_name] = node_name
+      return_hash[:table_name] = table_name
       return_hash[:collection] = collection
+      return_hash[:condition] = condition
+      return_hash[:page_size] = page_size
+      return_hash[:page_num] = page_num
+      return_hash[:page_index] = 0
       return_hash
     end
 
     def get_relations
       table_name = params['table_name']
       id = params['id']
+      page_size = params['page_size'].to_i
 
       @return_hash = {}
       @return_nodes = []

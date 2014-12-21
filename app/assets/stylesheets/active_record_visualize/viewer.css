@@ -60,8 +60,16 @@ svg {
     opacity: 1;
 }
 
-.header-row .cell-background{
+.header-row .cell-background, .footer-row .cell-background, .hyperlink-rect{
     fill: #ddd;
+    opacity: 1;
+}
+.footer-row text.hyperlink{
+    //text-anchor: middle;
+    text-decoration: underline;
+}
+.hyperlink-rect:hover + .hyperlink.enable{
+    fill: red;
     opacity: 1;
 }
 
@@ -88,3 +96,4 @@ text.hint{
     stroke: #666;
     stroke-width: 1px;
 }
+

@@ -137,7 +137,7 @@
         //this.initialize(rows, columnArray);
     };
 
-    TableBase.prototype.initialize = function(rows, columnArray, classNames){
+    TableBase.prototype.initialize = function(rows, columnArray, classNames, pageSize, pageNum, pageIndex){
         this.rows = rows;
         this.columnArray = columnArray;
         this.classNames = classNames;
@@ -146,6 +146,9 @@
             row.table = self;
         });
         this.border_radius = 5;
+        this.pageSize = pageSize;
+        this.pageNum = pageNum;
+        this.pageIndex = pageIndex;
     };
 
     TableBase.prototype.getCell = function(rowIndex, colIndex){
@@ -153,6 +156,119 @@
         var cell = row.getCellByColIndex(colIndex);
         return cell;
     };
+
+    TableBase.prototype.renderFooter = function($cellContainer, size){
+        var linkWidth = 15, linkSpace = 10;
+        var left = (size.width - linkWidth * 5 - linkSpace * 4) / 2;
+        var linkArray = [];
+        var currentPage = this.pageIndex;
+
+        linkArray.push({page:0, text:"<<", enable:currentPage>0});
+        linkArray.push({page:currentPage-1, text:"<",  enable:currentPage>0});
+        linkArray.push({page:currentPage, text:""+(currentPage+1), enable:false, plain:true});
+        linkArray.push({page:currentPage+1, text:">", enable:currentPage+1<this.pageNum});
+        linkArray.push({page:this.pageNum-1, text:">>", enable:currentPage<this.pageNum-1});
+        for(var i=0; i<linkArray.length; i++){
+            var link = linkArray[i];
+            var $rect = $cellContainer.append("rect")
+                .attr("class", "hyperlink-rect")
+                .attr("page", link.page)
+                .attr("x", left)
+                .attr("y", size.height/4)
+                .attr("width", linkWidth)
+                .attr("height", size.height/2);
+            $cellContainer.append("text")
+                .attr("class", (link.plain?"page-num":"hyperlink ") + (link.enable?"enable":"disable"))
+                .attr("x", left)
+                .attr("y", size.height / 2)
+                .attr("width", linkWidth)
+                .attr("dy", ".35em")
+                .text(link.text);
+            var self = this;
+            $rect.on("click", function (d) {
+                var navPage = $(this).attr("page");
+                navPage = parseInt(navPage);
+                Events.trigger("nav_page", self, navPage, currentPage);
+
+            });
+            left += linkWidth + linkSpace;
+        }
+        /*$cellContainer.append("rect")
+            .attr("class", "hyperlink-rect")
+            .attr("x", left)
+            .attr("y", size.height/4)
+            .attr("width", linkWidth)
+            .attr("height", size.height/2);
+        $cellContainer.append("text")
+            .attr("class", "hyperlink")
+            .attr("x", left)
+            .attr("y", size.height / 2)
+            .attr("width", linkWidth)
+            .attr("dy", ".35em")
+            .text("<<");
+
+        left += linkWidth + linkSpace;
+        $cellContainer.append("rect")
+            .attr("class", "hyperlink-rect")
+            .attr("x", left)
+            .attr("y", size.height/4)
+            .attr("width", linkWidth)
+            .attr("height", size.height/2);
+        $cellContainer.append("text")
+            .attr("class", "hyperlink")
+            .attr("x", left)
+            .attr("y", size.height / 2)
+            .attr("width", linkWidth)
+            .attr("dy", ".35em")
+            .text("<");
+
+        left += linkWidth + linkSpace;
+        $cellContainer.append("rect")
+            .attr("class", "hyperlink-rect")
+            .attr("x", left)
+            .attr("y", size.height/4)
+            .attr("width", linkWidth)
+            .attr("height", size.height/2);
+        $cellContainer.append("text")
+            .attr("class", "page-num")
+            .attr("x", left)
+            .attr("y", size.height / 2)
+            .attr("width", linkWidth)
+            .attr("dy", ".35em")
+            .text("120");
+
+        left += linkWidth + linkSpace;
+        $cellContainer.append("rect")
+            .attr("class", "hyperlink-rect")
+            .attr("x", left)
+            .attr("y", size.height/4)
+            .attr("width", linkWidth)
+            .attr("height", size.height/2);
+        $cellContainer.append("text")
+            .attr("class", "hyperlink")
+            .attr("x", left)
+            .attr("y", size.height / 2)
+            .attr("width", linkWidth)
+            .attr("dy", ".35em")
+            .text(">");
+
+        left += linkWidth + linkSpace;
+        $cellContainer.append("rect")
+            .attr("class", "hyperlink-rect")
+            .attr("x", left)
+            .attr("y", size.height/4)
+            .attr("width", linkWidth)
+            .attr("height", size.height/2);
+        $cellContainer.append("text")
+            .attr("class", "hyperlink")
+            .attr("x", left)
+            .attr("y", size.height / 2)
+            .attr("width", linkWidth)
+            .attr("dy", ".35em")
+            .text(">>");
+            */
+    };
+
     TableBase.prototype.renderCellData = function(rowIndex, colIndex, $cellContainer){
         var cell = this.getCell(rowIndex, colIndex);
         var size = cell.getSize();
@@ -164,6 +280,11 @@
         }
         else if(rowIndex == 1){
             text = colName;
+        }
+        else if(rowIndex == this.dataArray.length + 2){
+            text = "";
+            this.renderFooter($cellContainer, size);
+            return;
         }
         else{
             var row = this.dataArray[rowIndex - 2];
@@ -193,7 +314,6 @@
             row.draw($tableContainer);
         }
         this.$canvas = $tableContainer;
-
     };
 
     TableBase.prototype.getSize = function(){
@@ -273,7 +393,7 @@
     //SimpleTableBase.prototype = new ctor();
     SimpleTableBase.prototype = new TableBase();
     SimpleTableBase.prototype.initialize = function(titleHeight, headerHeight, rowHeight,
-                                   title, columnArray, dataArray){
+                                   title, columnArray, dataArray, pageSize, pageNum, pageIndex){
         this.titleHeight = titleHeight;
         this.headerHeight = headerHeight;
         this.rowHeight = rowHeight;
@@ -304,7 +424,10 @@
             var row = new TableRow(2+i, dataCells, "data-row");
             rows.push(row);
         }
-        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames);
+        var footerCell = new TableCell(0, columnNum, "");
+        rows.push(new TableRow(dataNum+2, [footerCell], "footer-row"));
+
+        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames, pageSize, pageNum, pageIndex);
     };
 
     SimpleTableBase.prototype.getCellByColumnNameAndRowIndex = function(columnName, dataIndex){
@@ -328,7 +451,7 @@
 
     ObjectTableBase.prototype = new SimpleTableBase();
     ObjectTableBase.prototype.initialize = function(titleHeight, headerHeight, rowHeight,
-                                                    title, columnArray, dataArray, hortNum){
+                                                    title, columnArray, dataArray, hortNum, pageSize, pageNum, pageIndex){
         this.titleHeight = titleHeight;
         this.headerHeight = headerHeight;
         this.rowHeight = rowHeight;
@@ -365,7 +488,8 @@
                 dataCells = [];
             }
         }
-        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames);
+
+        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames, pageSize, pageNum, pageIndex);
     };
     ObjectTableBase.prototype.renderCellData = function(rowIndex, colIndex, $cellContainer){
         var cell = this.getCell(rowIndex, colIndex);

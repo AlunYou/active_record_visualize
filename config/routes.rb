@@ -6,6 +6,7 @@ ActiveRecordVisualize::Engine.routes.draw do
   get 'table' => 'viewer#table'
 
   get 'get_relations' => 'viewer#get_relations'
+  get 'get_table_by_page' => 'viewer#get_table_by_page'
 
 end
 
