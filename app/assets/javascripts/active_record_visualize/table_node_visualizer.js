@@ -1,6 +1,13 @@
 (function () {
     "use strict";
 
+    var getTransform = function(node){
+        var trans = node.table.$canvas.attr("transform");
+        trans = trans.replace("translate(", "");
+        trans = trans.replace(")", "");
+        var values = trans.split(",");
+        return [parseFloat(values[0]), parseFloat(values[1])];
+    };
 
     var TableNodeVisualizer = function(){};
 
@@ -30,24 +37,25 @@
                 title, columnArray, dataArray, node.page_size, node.page_num, node.page_index);
             Events.on("nav_page", function(eventTable, navPage, currentPage){
                 if(eventTable === table){
+                    table.$canvas.classed("updating", true);
                     $.ajax({
                         type: "get",
                         url: "/active_record_visualize/get_table_by_page?table_name=" + node.table_name
                         + "&page_index="+navPage + "&page_size=" + node.page_size,
                         data: {condition:node.condition},
                         success: function (nodeData) {
+                            table.$canvas.classed("updating", false);
                             table.$canvas.remove();
                             node.rows = nodeData.rows;
                             node.page_index = nodeData.page_index;
                             dataArray = node.rows;
                             table.initialize(titleHeight, headerHeight, rowHeight,
                                 title, columnArray, dataArray, node.page_size, node.page_num, node.page_index);
-                            //self.draw($container, node);
-
-                            //return;
-                            var pos = {left:node.x, top:node.y};
-
+                            var trans = getTransform(node);
+                            var pos = {left:trans[0], top:trans[1]};
                             table.draw($container, pos);
+
+                            Events.trigger("node_reset", node);
                         },
                         error: function (resp) {
                             alert("failure");

@@ -171,7 +171,7 @@
         for(var i=0; i<linkArray.length; i++){
             var link = linkArray[i];
             var $rect = $cellContainer.append("rect")
-                .attr("class", "hyperlink-rect")
+                .attr("class", "hyperlink-rect " + (link.enable?"enable":"disable"))
                 .attr("page", link.page)
                 .attr("x", left)
                 .attr("y", size.height/4)
@@ -186,6 +186,13 @@
                 .text(link.text);
             var self = this;
             $rect.on("click", function (d) {
+                var $parent_updating = $(this).closest(".table.updating");
+                if($parent_updating.length > 0){
+                    return;
+                }
+                if(d3.select(this).classed("disable")){
+                    return;
+                }
                 var navPage = $(this).attr("page");
                 navPage = parseInt(navPage);
                 Events.trigger("nav_page", self, navPage, currentPage);
@@ -193,80 +200,6 @@
             });
             left += linkWidth + linkSpace;
         }
-        /*$cellContainer.append("rect")
-            .attr("class", "hyperlink-rect")
-            .attr("x", left)
-            .attr("y", size.height/4)
-            .attr("width", linkWidth)
-            .attr("height", size.height/2);
-        $cellContainer.append("text")
-            .attr("class", "hyperlink")
-            .attr("x", left)
-            .attr("y", size.height / 2)
-            .attr("width", linkWidth)
-            .attr("dy", ".35em")
-            .text("<<");
-
-        left += linkWidth + linkSpace;
-        $cellContainer.append("rect")
-            .attr("class", "hyperlink-rect")
-            .attr("x", left)
-            .attr("y", size.height/4)
-            .attr("width", linkWidth)
-            .attr("height", size.height/2);
-        $cellContainer.append("text")
-            .attr("class", "hyperlink")
-            .attr("x", left)
-            .attr("y", size.height / 2)
-            .attr("width", linkWidth)
-            .attr("dy", ".35em")
-            .text("<");
-
-        left += linkWidth + linkSpace;
-        $cellContainer.append("rect")
-            .attr("class", "hyperlink-rect")
-            .attr("x", left)
-            .attr("y", size.height/4)
-            .attr("width", linkWidth)
-            .attr("height", size.height/2);
-        $cellContainer.append("text")
-            .attr("class", "page-num")
-            .attr("x", left)
-            .attr("y", size.height / 2)
-            .attr("width", linkWidth)
-            .attr("dy", ".35em")
-            .text("120");
-
-        left += linkWidth + linkSpace;
-        $cellContainer.append("rect")
-            .attr("class", "hyperlink-rect")
-            .attr("x", left)
-            .attr("y", size.height/4)
-            .attr("width", linkWidth)
-            .attr("height", size.height/2);
-        $cellContainer.append("text")
-            .attr("class", "hyperlink")
-            .attr("x", left)
-            .attr("y", size.height / 2)
-            .attr("width", linkWidth)
-            .attr("dy", ".35em")
-            .text(">");
-
-        left += linkWidth + linkSpace;
-        $cellContainer.append("rect")
-            .attr("class", "hyperlink-rect")
-            .attr("x", left)
-            .attr("y", size.height/4)
-            .attr("width", linkWidth)
-            .attr("height", size.height/2);
-        $cellContainer.append("text")
-            .attr("class", "hyperlink")
-            .attr("x", left)
-            .attr("y", size.height / 2)
-            .attr("width", linkWidth)
-            .attr("dy", ".35em")
-            .text(">>");
-            */
     };
 
     TableBase.prototype.renderCellData = function(rowIndex, colIndex, $cellContainer){

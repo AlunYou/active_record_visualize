@@ -68,10 +68,11 @@ svg {
     //text-anchor: middle;
     text-decoration: underline;
 }
-.hyperlink-rect:hover + .hyperlink.enable{
+.table:not(.updating)  .hyperlink-rect:hover + .hyperlink.enable{
     fill: red;
     opacity: 1;
 }
+
 
 text.hint{
     fill: #999;
@@ -90,6 +91,9 @@ text.hint{
     fill: black;
     stroke: black;
     stroke-width: 4px;
+}
+.updating{
+    opacity: 0.2;
 }
 
 .row .border{

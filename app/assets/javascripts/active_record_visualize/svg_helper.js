@@ -81,7 +81,7 @@
 
                 textObject.textContent = textString.substring(0, i-3) + '...';
                 //add built-in tooltip
-                if($text[0].classList.contains("value")){
+                if(d3.select($text[0]).classed("value")){
                     var $rect = $text.parent().find(".cell-background");
                     $rect.html("<title>" + textString + "</title>");
                 }

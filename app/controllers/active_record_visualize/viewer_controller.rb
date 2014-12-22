@@ -60,7 +60,7 @@ module ActiveRecordVisualize
           page_num = page_num + 1
         end
         data = model.where(condition).limit(page_size).offset(0).to_a
-        node_name = "#{table_name}s (foreign_#{foreign_key}_#{foreign_id})"
+        node_name = "#{table_name}s_foreign_#{foreign_key}_#{foreign_id}"
         collection = true
       else
         data = model.all

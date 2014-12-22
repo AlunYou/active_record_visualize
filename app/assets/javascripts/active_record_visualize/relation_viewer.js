@@ -51,6 +51,7 @@
         this.$container = $container;
         this.w = w;
         this.h = h;
+        Events.on("node_reset", this.resetNode, this);
     };
 
     RelationViewer.prototype.draw = function(){
@@ -78,18 +79,7 @@
     };
 
     RelationViewer.prototype.resetNode = function(node){
-        node.table.$canvas.remove();
-        this.nodeVisualizer.draw(this.$container, node);
-
-        /*var self = this;
-        d3.selectAll(".table")
-            .datum(function(previous_d, i){
-                var node = self.nodes[i];
-                return node;
-            })
-            .call(drag);*/
-
-        //this.layouter.layout(this.nodes, this.w, this.h);
+        node.table.$canvas.datum(node).call(drag);
     };
 
     RelationViewer.prototype.initLinks = function(){
