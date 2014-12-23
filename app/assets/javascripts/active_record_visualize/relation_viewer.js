@@ -75,7 +75,9 @@
             })
             .call(drag);
 
-        this.layouter.layout(this.nodes, this.w, this.h);
+        if(this.layouter){
+            this.layouter.layout(this.nodes, this.w, this.h);
+        }
     };
 
     RelationViewer.prototype.resetNode = function(node){

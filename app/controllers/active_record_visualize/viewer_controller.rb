@@ -34,9 +34,12 @@ module ActiveRecordVisualize
       condition = params[:condition]
       #ActionController::Parameters.permit_all_parameters = true
       model = get_model_const(table_name)
-      condition = condition.permit(model.column_names)
-
-      data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
+      if(condition)
+        condition = condition.permit(model.column_names)
+        data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
+      else
+        data = model.all.limit(page_size.to_i).offset(page_index*page_size)
+      end
 
       return_hash = {}
       return_hash[:rows] = data
@@ -44,27 +47,30 @@ module ActiveRecordVisualize
       render json:return_hash
     end
 
-    def get_table_hash(table_name, id, foreign_key, foreign_id)
+    def get_table_hash(table_name, id, condition, page_index)
       page_size = params['page_size'].to_i
       model = get_model_const(table_name)
 
       if(id)
         data = [model.find(id)]
         node_name = "#{table_name}_#{id}"
-      elsif(foreign_key && foreign_id)
-        condition = {}
-        condition[foreign_key] = foreign_id
-        total_num = model.where(condition).count
+      else
+        if(condition)
+          total_num = model.where(condition).count
+          data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
+          node_name = "#{table_name}s_foreign_#{condition}"
+        else
+          total_num = model.all.count
+          data = model.all.limit(page_size.to_i).offset(page_index*page_size)
+          node_name = "#{table_name}s"
+        end
+
         page_num = total_num / page_size
         if(total_num % page_size != 0)
           page_num = page_num + 1
         end
-        data = model.where(condition).limit(page_size).offset(0).to_a
-        node_name = "#{table_name}s_foreign_#{foreign_key}_#{foreign_id}"
+
         collection = true
-      else
-        data = model.all
-        node_name = "#{table_name}"
       end
 
       columns = model.columns
@@ -90,7 +96,7 @@ module ActiveRecordVisualize
       return_hash[:condition] = condition
       return_hash[:page_size] = page_size
       return_hash[:page_num] = page_num
-      return_hash[:page_index] = 0
+      return_hash[:page_index] = page_index
       return_hash
     end
 
@@ -120,7 +126,8 @@ module ActiveRecordVisualize
     def get_relation_recursive(macro, table_name, id, foreign_key, foreign_id)
       model = get_model_const(table_name)
 
-      row_hash = get_table_hash(table_name, id, foreign_key, foreign_id)
+      condition = {foreign_key: foreign_id}
+      row_hash = get_table_hash(table_name, id, condition, 0)
       node_name = row_hash[:node_name]
 
       if(@nodes_hash[node_name].nil?)
@@ -186,7 +193,13 @@ module ActiveRecordVisualize
       table_name = params['table_name']
       id = params['id']
 
-      return_hash = get_table_hash(table_name, id, nil, nil)
+      page_index = params[:page_index].to_i
+      page_size = params[:page_size].to_i
+      condition = params[:condition]
+
+      return_hash = get_table_hash(table_name, id, condition, page_index)
+      return_hash[:level] = 0
+      return_hash[:index] = 0
       render json:return_hash
       return
 

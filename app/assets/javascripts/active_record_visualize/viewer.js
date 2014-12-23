@@ -76,9 +76,60 @@ $().ready(function() {
         });
     };
 
+    var renderModelTable = function(){
+        $.ajax({
+            type: "get",
+            url: "/active_record_visualize/table",
+            data: {table_name:table_name, page_size:page_size, page_index:0},
+            success: function (tableData) {
+                var node = tableData;
+                var nodes = [node];
+                var nodeVisualizer = new TableNodeVisualizer();
+                var forceLayouter = new LevelLayouter();
+                var relation_viewer = new RelationViewer(nodes, null, nodeVisualizer, null,
+                    forceLayouter, $container, w, h);
+                relation_viewer.draw();
 
-    renderRelations("project_user", 1);
+                /*var columns = $.map(tableData.columns, function(col, index){
+                    return new ArvColumnDef(col.dbTableName, col.dbFieldName, col.title, col.valueType, col.linkType, col.width);
+                });
+                $.each(tableData.rows, function(index, row){
+                    $.each(row, function(key, value){
+                        if(value == null){
+                            row[key] = ""
+                        }
+                    })
+                })
 
+                var table = new ArvTable("test", "single", columns, tableData.rows, 30, 30);
+                var canvas = d3.select(".canvas");
+                table.draw(canvas, {left:200, top:200});
+                last_table = table;*/
+            },
+            error: function (resp) {
+
+                alert("failure");
+            }
+        });
+    };
+
+    var last_table = null;
+
+    //renderRelations("project_user", 1);
+
+    var $select = $("#table_list_id");
+    $select.on("change", function(){
+        var table_name = $select.val();
+        last_table.destroy();
+        renderModelTable(table_name);
+    });
+    var table_name = $select.val();
+    renderModelTable(table_name);
+
+
+
+
+    /*
     function render_simple() {
 
         var titleHeight = 30, headerHeight = 30, rowHeight = 30,
@@ -172,7 +223,6 @@ $().ready(function() {
     }
     //render_object(2);
 
-    /*
     function render_simple(){
         var colJson = [
             {"dbTableName":"Project", "dbFieldName":"id", "title":"Id", valueType:"text", linkType:"static", width:100},
