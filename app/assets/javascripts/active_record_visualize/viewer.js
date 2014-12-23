@@ -52,62 +52,49 @@ $().ready(function() {
     h = $body.height();
     console.log("w,h=" + w + "," + h);
 
-    window.page_size = 2;
-    var renderRelations = function(table_name, id){
-        $.ajax({
-            type: "get",
-            url: "/active_record_visualize/get_relations?table_name=" + table_name + "&id=" + id + "&page_size=" + window.page_size,
-            data: {table_name:table_name, id:id},
-            success: function (relationData) {
-                var nodes = relationData.nodes;
-                var links = relationData.links;
+    var renderScene = function(scene){
 
-                var nodeVisualizer = new TableNodeVisualizer();
-                var linkVisualizer = new SimpleLinkVisualizer();
-                //var forceLayouter = new ForceLayouter();
-                var forceLayouter = new LevelLayouter();
-                var relation_viewer = new RelationViewer(nodes, links, nodeVisualizer, linkVisualizer,
-                    forceLayouter, $container, w, h);
-                relation_viewer.draw();
-            },
-            error: function (resp) {
-                alert("failure");
+        var nodes = scene.nodes;
+        var links = scene.links;
+
+        var nodeVisualizer = new TableNodeVisualizer();
+        var linkVisualizer = new SimpleLinkVisualizer();
+        //var layouter = new ForceLayouter();
+        var layouter = new LevelLayouter();
+        var relation_viewer = new RelationViewer(nodes, links, nodeVisualizer, linkVisualizer,
+            layouter, $container, w, h);
+        relation_viewer.draw();
+    };
+    var destroyScene = function(){
+        if(window.scene){
+            var scene = window.scene;
+            for(var i=0; i<scene.nodes.length; i++) {
+                var node = scene.nodes[i];
+                if(node.table.$canvas){
+                    node.table.$canvas.remove();
+                }
+
             }
-        });
+            for(var i=0; i<scene.links.length; i++) {
+                var link = scene.links[i];
+            }
+        };
     };
 
-    var renderModelTable = function(){
+
+    window.page_size = 2;
+    window.scene = null;
+    var renderResource = function(table_name, id, resource){
         $.ajax({
             type: "get",
-            url: "/active_record_visualize/table",
-            data: {table_name:table_name, page_size:page_size, page_index:0},
-            success: function (tableData) {
-                var node = tableData;
-                var nodes = [node];
-                var nodeVisualizer = new TableNodeVisualizer();
-                var forceLayouter = new LevelLayouter();
-                var relation_viewer = new RelationViewer(nodes, null, nodeVisualizer, null,
-                    forceLayouter, $container, w, h);
-                relation_viewer.draw();
-
-                /*var columns = $.map(tableData.columns, function(col, index){
-                    return new ArvColumnDef(col.dbTableName, col.dbFieldName, col.title, col.valueType, col.linkType, col.width);
-                });
-                $.each(tableData.rows, function(index, row){
-                    $.each(row, function(key, value){
-                        if(value == null){
-                            row[key] = ""
-                        }
-                    })
-                })
-
-                var table = new ArvTable("test", "single", columns, tableData.rows, 30, 30);
-                var canvas = d3.select(".canvas");
-                table.draw(canvas, {left:200, top:200});
-                last_table = table;*/
+            url: "/active_record_visualize/" + resource,
+            data: {table_name:table_name, id:id==null?null:id, page_size:page_size, page_index:0},
+            success: function (scene) {
+                destroyScene();
+                window.scene = scene;
+                renderScene(scene);
             },
             error: function (resp) {
-
                 alert("failure");
             }
         });
@@ -115,16 +102,15 @@ $().ready(function() {
 
     var last_table = null;
 
-    //renderRelations("project_user", 1);
+    renderResource("project_user", 1, "relation");
 
     var $select = $("#table_list_id");
     $select.on("change", function(){
         var table_name = $select.val();
-        last_table.destroy();
-        renderModelTable(table_name);
+        renderResource(table_name, null, "table");
     });
     var table_name = $select.val();
-    renderModelTable(table_name);
+    renderResource(table_name, null, "table");
 
 
 
