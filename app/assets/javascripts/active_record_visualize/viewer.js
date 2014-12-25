@@ -14,93 +14,31 @@
 //= require active_record_visualize/force_layouter
 //= require active_record_visualize/level_layouter
 //= require active_record_visualize/relation_viewer
+//= require active_record_visualize/scene_viewer
 
 $().ready(function() {
-    var w = 1024, h = 550;
-    var $container;
-
-    function zoomed() {
-        $container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-    }
-    var zoom = d3.behavior.zoom()
-        .scaleExtent([0.1, 10])
-        .on("zoom", zoomed);
-    var canvas = d3.select(".canvas")
-        .append("g")
-        .call(zoom);
-    $container = canvas.append("g");
-    $container.append("rect")
-        .attr("width", "100000px")
-        .attr("height", "100000px")
-        .attr("x", "-50000px")
-        .attr("y", "-50000px")
-        .style("fill", "none")
-        .style("pointer-events", "all");
-    $container.append("text")
-        .attr("class", "hidden-text");
-    $container.append("svg:defs").html(
-            '<filter id="drop-shadow" height="130%">' +
-            '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' + <!-- stdDeviation is how much to blur -->
-            '<feOffset dx="2" dy="2" result="offsetblur"/>' + <!-- how much to offset -->
-            '<feMerge>' +
-            '    <feMergeNode/>' + <!-- this contains the offset blurred image -->
-            '    <feMergeNode in="SourceGraphic"/>' + <!-- this contains the element that the filter is applied to -->
-            '</feMerge>' +
-            '</filter>');
-    var $body = $(document);
-    w = $body.width();
-    h = $body.height();
-    console.log("w,h=" + w + "," + h);
-
-    var renderScene = function(scene){
-
-        var nodes = scene.nodes;
-        var links = scene.links;
-
-        var nodeVisualizer = new TableNodeVisualizer();
-        var linkVisualizer = new SimpleLinkVisualizer();
-        //var layouter = new ForceLayouter();
-        var layouter = new LevelLayouter();
-        var relation_viewer = new RelationViewer(nodes, links, nodeVisualizer, linkVisualizer,
-            layouter, $container, w, h);
-        relation_viewer.draw();
-    };
-    var destroyScene = function(){
-        if(window.scene){
-            var scene = window.scene;
-            for(var i=0; i<scene.nodes.length; i++) {
-                var node = scene.nodes[i];
-                if(node.table.$canvas){
-                    node.table.$canvas.remove();
-                }
-
-            }
-            for(var i=0; i<scene.links.length; i++) {
-                var link = scene.links[i];
-            }
-        };
-    };
-
 
     window.page_size = 2;
     window.scene = null;
+
+    var sceneViewer = new SceneViewer();
+    sceneViewer.initialize();
+
     var renderResource = function(table_name, id, resource){
         $.ajax({
             type: "get",
             url: "/active_record_visualize/" + resource,
-            data: {table_name:table_name, id:id==null?null:id, page_size:page_size, page_index:0},
+            data: {table_name:table_name, id:id==null?null:id, page_size:window.page_size, page_index:0},
             success: function (scene) {
-                destroyScene();
+                sceneViewer.destroyScene(window.scene);
                 window.scene = scene;
-                renderScene(scene);
+                sceneViewer.renderScene(scene);
             },
             error: function (resp) {
                 alert("failure");
             }
         });
     };
-
-    var last_table = null;
 
     renderResource("project_user", 1, "relation");
 
@@ -111,9 +49,6 @@ $().ready(function() {
     });
     var table_name = $select.val();
     renderResource(table_name, null, "table");
-
-
-
 
     /*
     function render_simple() {
