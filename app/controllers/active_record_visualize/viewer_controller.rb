@@ -51,14 +51,15 @@ module ActiveRecordVisualize
       page_size = params['page_size'].to_i
       model = get_model_const(table_name)
 
-      if(id)
+      id = id.to_s
+      if(id && id.is_a?(String) && !id.empty?)
         data = [model.find(id)]
         node_name = "#{table_name}_#{id}"
       else
         if(condition)
           total_num = model.where(condition).count
           data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
-          node_name = "#{table_name}s_foreign_#{condition}"
+          node_name = "#{table_name}s_foreign_#{condition.keys[0]}"
         else
           total_num = model.all.count
           data = model.all.limit(page_size.to_i).offset(page_index*page_size)
@@ -100,7 +101,7 @@ module ActiveRecordVisualize
       return_hash
     end
 
-    def get_relations
+    def relation
       table_name = params['table_name']
       id = params['id']
       page_size = params['page_size'].to_i
@@ -126,7 +127,8 @@ module ActiveRecordVisualize
     def get_relation_recursive(macro, table_name, id, foreign_key, foreign_id)
       model = get_model_const(table_name)
 
-      condition = {foreign_key: foreign_id}
+      condition = {}
+      condition[foreign_key] = foreign_id
       row_hash = get_table_hash(table_name, id, condition, 0)
       node_name = row_hash[:node_name]
 
@@ -200,7 +202,11 @@ module ActiveRecordVisualize
       return_hash = get_table_hash(table_name, id, condition, page_index)
       return_hash[:level] = 0
       return_hash[:index] = 0
-      render json:return_hash
+
+      @return_hash = {}
+      @return_hash['nodes'] = [return_hash]
+      @return_hash['links'] = []
+      render json:@return_hash
       return
 
       #data = Project.all
