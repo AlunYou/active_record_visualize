@@ -48,7 +48,12 @@ $().ready(function() {
         renderResource(table_name, null, "table");
     });
     var table_name = $select.val();
-    renderResource(table_name, null, "table");
+    //renderResource(table_name, null, "table");
+
+
+    Events.on("switch_scene", function(table_name, id){
+        renderResource(table_name, id, "relation");
+    }, this);
 
     /*
     function render_simple() {

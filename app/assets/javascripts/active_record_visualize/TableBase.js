@@ -4,13 +4,14 @@
 //sub-module TableCell
 (function () {
     "use strict";
-    var TableCell = function(columnIndex, span){
+    var TableCell = function(columnIndex, span, classNames){
         this.columnIndex = columnIndex;
         this.span = span;
+        this.classNames = classNames;
     };
     TableCell.prototype.draw = function($container){
-        var $cellContainer = $container.append("svg:g")
-            .attr("class", "cell")
+        this.$cellContainer = $container.append("svg:g")
+            .attr("class", " cell")
             .attr("transform", "translate(" + (this.row.table.getLeftOfColumn(this.columnIndex)+0) + ",0)");
         var size = this.getSize();
         var tl=false, tr=false, bl=false, br=false;
@@ -30,23 +31,36 @@
                 br = true;
             }
         }
-        var $background = new SVGHelper().drawRect($cellContainer, size.width, size.height,
+        var $background = new SVGHelper().drawRect(this.$cellContainer, size.width, size.height,
             this.row.table.border_radius, tl, tr, bl, br);
-        $background.attr("class", "cell-background");
-        this.row.table.renderCellData(this.row.rowIndex, this.columnIndex, $cellContainer);
+        $background.attr("class", "cell-background hyperlink-rect");
+        this.row.table.renderCellData(this.row.rowIndex, this.columnIndex, this.$cellContainer);
+
+        var self = this;
+        $background.on("click", function (d) {
+            Events.trigger("click_cell", self, self.row.table);
+        });
 
         //border-right
         if(this.columnIndex + this.span - 1 != this.row.table.columnArray.length - 1){
-            $cellContainer.append("line")
+            this.$cellContainer.append("line")
                 .attr("class", "border")
                 .attr("x1", size.width)
                 .attr("y1", 0)
                 .attr("x2", size.width)
                 .attr("y2", size.height);
         }
-        var sel = $($cellContainer[0][0]).find("text");
+        var sel = $(this.$cellContainer[0][0]).find("text");
         new SVGHelper().perfectEllipsis(sel, size.width-2);
     };
+
+    TableCell.prototype.getText = function() {
+        return $(this.$cellContainer[0][0]).find("text").text();
+    }
+
+    TableCell.prototype.getColumnName = function() {
+        return this.row.table.columnArray[this.columnIndex].title;
+    }
 
     TableCell.prototype.getSize = function(){
         var width = 0;
@@ -206,6 +220,8 @@
         var cell = this.getCell(rowIndex, colIndex);
         var size = cell.getSize();
 
+        var classNames = cell.classNames;
+
         var colName = this.columnArray[colIndex].title;
         var text;
         if(rowIndex === 0 ){
@@ -222,10 +238,13 @@
         else{
             var row = this.dataArray[rowIndex - 2];
             text = row[colName];
+            if(colName === "id"){
+                classNames = " hyperlink enable " + classNames;
+            }
         }
 
         $cellContainer.append("text")
-            .attr("class", "value")
+            .attr("class", classNames + " value")
             .attr("x", 2)//size.width / 2)
             .attr("y", size.height / 2)
             .attr("dy", ".35em")

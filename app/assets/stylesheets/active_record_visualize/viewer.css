@@ -69,11 +69,11 @@ svg {
     fill: #ddd;
     opacity: 1;
 }
-.footer-row text.hyperlink{
-    //text-anchor: middle;
+
+text.hyperlink{
     text-decoration: underline;
 }
-.table:not(.updating)  .hyperlink-rect:hover + .hyperlink.enable{
+.table:not(.updating) .hyperlink-rect:hover + .hyperlink.enable{
     fill: red;
     opacity: 1;
 }

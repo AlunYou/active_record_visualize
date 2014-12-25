@@ -52,6 +52,22 @@
         this.w = w;
         this.h = h;
         Events.on("node_reset", this.resetNode, this);
+
+        Events.on("click_cell", function(cell, table){
+            if(cell.getColumnName() !== "id"){
+                return;
+            }
+            var click_node;
+            for(var i=0; i<this.nodes.length; i++){
+                var node = this.nodes[i];
+                if(node.table === table){
+                    click_node = node;
+                    break;
+                }
+            }
+            var text = cell.getText();
+            Events.trigger("switch_scene", node.table_name, text);
+        }, this);
     };
 
     RelationViewer.prototype.draw = function(){
