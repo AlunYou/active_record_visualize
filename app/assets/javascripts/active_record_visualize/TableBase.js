@@ -151,7 +151,7 @@
         //this.initialize(rows, columnArray);
     };
 
-    TableBase.prototype.initialize = function(rows, columnArray, classNames, pageSize, pageNum, pageIndex){
+    TableBase.prototype.initialize = function(rows, columnArray, classNames, pageSize, pageNum, pageIndex, minWidth){
         this.rows = rows;
         this.columnArray = columnArray;
         this.classNames = classNames;
@@ -163,6 +163,7 @@
         this.pageSize = pageSize;
         this.pageNum = pageNum;
         this.pageIndex = pageIndex;
+        this.minWidth = minWidth;
     };
 
     TableBase.prototype.getCell = function(rowIndex, colIndex){
@@ -276,6 +277,9 @@
             width = Math.max(size.width, width);
             height += size.height;
         });
+        if(width < this.minWidth){
+            width = this.minWidth;
+        }
         return {width:width, height:height};
     };
 
@@ -345,7 +349,7 @@
     //SimpleTableBase.prototype = new ctor();
     SimpleTableBase.prototype = new TableBase();
     SimpleTableBase.prototype.initialize = function(titleHeight, headerHeight, rowHeight,
-                                   title, columnArray, dataArray, pageSize, pageNum, pageIndex){
+                                   title, columnArray, dataArray, pageSize, pageNum, pageIndex, minWidth){
         this.titleHeight = titleHeight;
         this.headerHeight = headerHeight;
         this.rowHeight = rowHeight;
@@ -379,7 +383,7 @@
         var footerCell = new TableCell(0, columnNum, "");
         rows.push(new TableRow(dataNum+2, [footerCell], "footer-row"));
 
-        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames, pageSize, pageNum, pageIndex);
+        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames, pageSize, pageNum, pageIndex, minWidth);
     };
 
     SimpleTableBase.prototype.getCellByColumnNameAndRowIndex = function(columnName, dataIndex){
@@ -403,7 +407,7 @@
 
     ObjectTableBase.prototype = new SimpleTableBase();
     ObjectTableBase.prototype.initialize = function(titleHeight, headerHeight, rowHeight,
-                                                    title, columnArray, dataArray, hortNum, pageSize, pageNum, pageIndex){
+                                                    title, columnArray, dataArray, hortNum, pageSize, pageNum, pageIndex, minWidth){
         this.titleHeight = titleHeight;
         this.headerHeight = headerHeight;
         this.rowHeight = rowHeight;
@@ -441,7 +445,7 @@
             }
         }
 
-        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames, pageSize, pageNum, pageIndex);
+        TableBase.prototype.initialize.call(this, rows, columnArray, this.classNames, pageSize, pageNum, pageIndex, minWidth);
     };
     ObjectTableBase.prototype.renderCellData = function(rowIndex, colIndex, $cellContainer){
         var cell = this.getCell(rowIndex, colIndex);

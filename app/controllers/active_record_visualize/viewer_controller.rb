@@ -83,9 +83,9 @@ module ActiveRecordVisualize
         hash[:title] = col.name
         hash[:valueType] = col.type
         hash[:width] = 50
-        if(col.name.include?('name') || col.name.include?('id') || col.name.include?('status'))
-          cols.append(hash)
-        end
+        #if(col.name.include?('name') || col.name.include?('id') || col.name.include?('status'))
+        cols.append(hash)
+        #end
       end
 
       return_hash = {}

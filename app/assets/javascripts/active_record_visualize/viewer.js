@@ -21,7 +21,11 @@ $().ready(function() {
     window.page_size = 2;
     window.scene = null;
 
-    var sceneViewer = new SceneViewer();
+    var $body = $(document);
+    var w = $body.width();
+    var h = $body.height();
+
+    var sceneViewer = new SceneViewer(w, h);
     sceneViewer.initialize();
 
     var renderResource = function(table_name, id, resource){
@@ -33,6 +37,7 @@ $().ready(function() {
                 sceneViewer.destroyScene(window.scene);
                 window.scene = scene;
                 sceneViewer.renderScene(scene);
+                new SVGHelper().zoomToExtent(w, h);
             },
             error: function (resp) {
                 alert("failure");
@@ -40,7 +45,7 @@ $().ready(function() {
         });
     };
 
-    renderResource("project_user", 1, "relation");
+    //renderResource("project_user", 1, "relation");
 
     var $select = $("#table_list_id");
     $select.on("change", function(){
@@ -48,7 +53,7 @@ $().ready(function() {
         renderResource(table_name, null, "table");
     });
     var table_name = $select.val();
-    //renderResource(table_name, null, "table");
+    renderResource(table_name, null, "table");
 
 
     Events.on("switch_scene", function(table_name, id){

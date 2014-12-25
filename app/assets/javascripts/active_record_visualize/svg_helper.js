@@ -3,6 +3,22 @@
     "use strict";
     var SVGHelper = function(){
     };
+
+    SVGHelper.prototype.zoomToExtent = function(width, height){
+        var $scene = d3.select(".scene");
+        var bounds = $scene[0][0].getBBox();
+        var dx = bounds.width,
+            dy = bounds.height,
+            x = bounds.x + bounds.width / 2,
+            y = bounds.y + bounds.height / 2,
+            scale = .9 / Math.max(dx / width, dy / height),
+            translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+        $scene.transition()
+            .duration(750)
+            .style("stroke-width", 1.5 / scale + "px")
+            .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+    }
     SVGHelper.prototype.drawRect = function($container, w, h, r, tl, tr, bl, br){
         var round = false;
         if(r && r > 0 && (tl || tr || bl || br)){

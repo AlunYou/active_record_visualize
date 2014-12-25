@@ -41,10 +41,8 @@
         .on("drag", dragged)
         .on("dragend", dragEnded);
 
-    var RelationViewer = function(nodes, links, nodeVisualizer, linkVisualizer,
+    var RelationViewer = function(nodeVisualizer, linkVisualizer,
                                   layouter, $container, w, h){
-        this.nodes = nodes;
-        this.links = links;
         this.nodeVisualizer = nodeVisualizer;
         this.linkVisualizer = linkVisualizer;
         this.layouter = layouter;
@@ -70,7 +68,9 @@
         }, this);
     };
 
-    RelationViewer.prototype.draw = function(){
+    RelationViewer.prototype.draw = function(nodes, links){
+        this.nodes = nodes;
+        this.links = links;
         this.initNodes();
         this.initLinks();
     }

@@ -4,7 +4,7 @@
 
     var SceneViewer = function(){};
 
-    SceneViewer.prototype.initialize = function(){
+    SceneViewer.prototype.initialize = function(w, h){
         var $container;
         function zoomed() {
             $container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -14,15 +14,18 @@
             .on("zoom", zoomed);
         var canvas = d3.select(".canvas")
             .append("g")
+
             .call(zoom);
-        $container = canvas.append("g");
-        $container.append("rect")
+        var parent = canvas.append("g");
+        parent.append("rect")
             .attr("width", "100000px")
             .attr("height", "100000px")
             .attr("x", "-50000px")
             .attr("y", "-50000px")
             .style("fill", "none")
             .style("pointer-events", "all");
+        $container = parent.append("g")
+            .attr("class", "scene");
         $container.append("text")
             .attr("class", "hidden-text");
         $container.append("svg:defs").html(
@@ -36,22 +39,21 @@
                 '</filter>');
 
         this.$container = $container;
-        var $body = $(document);
-        this.w = $body.width();
-        this.h = $body.height();
-    };
-
-    SceneViewer.prototype.renderScene = function(scene){
-        var nodes = scene.nodes;
-        var links = scene.links;
+        this.w = w;
+        this.h = h;
 
         var nodeVisualizer = new TableNodeVisualizer();
         var linkVisualizer = new SimpleLinkVisualizer();
         //var layouter = new ForceLayouter();
         var layouter = new LevelLayouter();
-        var relation_viewer = new RelationViewer(nodes, links, nodeVisualizer, linkVisualizer,
+        this.relation_viewer = new RelationViewer(nodeVisualizer, linkVisualizer,
             layouter, this.$container, this.w, this.h);
-        relation_viewer.draw();
+    };
+
+    SceneViewer.prototype.renderScene = function(scene){
+        var nodes = scene.nodes;
+        var links = scene.links;
+        this.relation_viewer.draw(nodes, links);
     };
 
     SceneViewer.prototype.destroyScene = function(scene){
@@ -67,6 +69,8 @@
                 var link = scene.links[i];
                 link.$canvas.remove();
             }
+            scene.nodes = [];
+            scene.links = [];
         };
     };
 
