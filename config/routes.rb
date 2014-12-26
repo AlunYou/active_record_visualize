@@ -1,12 +1,11 @@
 
 ActiveRecordVisualize::Engine.routes.draw do
-  root to: "rules#index"
 
-  get 'viewer' => 'viewer#show'
   get 'table' => 'viewer#table'
-
   get 'relation' => 'viewer#relation'
-  get 'get_table_by_page' => 'viewer#get_table_by_page'
+
+  root to: 'viewer#show'
+  get '*path' => 'viewer#show'
 
 end
 

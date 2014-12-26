@@ -1,6 +1,8 @@
 // Place all the behaviors and hooks related to the matching controller here.
 // All this logic will automatically be available in application.js.
 //= require jquery
+//= require active_record_visualize/underscore
+//= require active_record_visualize/backbone
 //= require active_record_visualize/d3
 //= require active_record_visualize/events
 //= require active_record_visualize/sized_quadtree
@@ -43,19 +45,44 @@ $().ready(function() {
         });
     };
 
-    //renderResource("project_user", 1, "relation");
+
+    var Router = Backbone.Router.extend({
+        routes: {
+            "active_record_visualize": "view_default",
+            "active_record_visualize/:table_name": "view_table",
+            "active_record_visualize/:table_name/:id": "view_object"
+        },
+
+        view_default: function() {
+            var $select = $("#table_list_id");
+            var table_name = $select.val();
+            renderResource(table_name, null, "table");
+        },
+
+        view_table: function(table_name) {
+            renderResource(table_name, null, "table");
+        },
+        view_object: function(table_name, id) {
+            renderResource(table_name, id, "relation");
+        }
+    });
+
+    var router = new Router();
+
+    Backbone.history.start({ pushState: true, root:"/" });
 
     var $select = $("#table_list_id");
     $select.on("change", function(){
         var table_name = $select.val();
-        renderResource(table_name, null, "table");
+        router.navigate("/active_record_visualize/"+table_name, true);
+        //renderResource(table_name, null, "table");
     });
-    var table_name = $select.val();
-    renderResource(table_name, null, "table");
-
+    //renderResource(table_name, null, "table");
+    //renderResource("project_user", 1, "relation");
 
     Events.on("switch_scene", function(table_name, id){
-        renderResource(table_name, id, "relation");
+        router.navigate("/active_record_visualize/"+table_name+"/"+id, true);
+        //renderResource(table_name, id, "relation");
     }, this);
 
     /*
