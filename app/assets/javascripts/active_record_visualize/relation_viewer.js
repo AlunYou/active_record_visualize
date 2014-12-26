@@ -17,8 +17,15 @@
         var trans = node.table.$canvas.attr("transform");
         trans = trans.replace("translate(", "");
         trans = trans.replace(")", "");
+        trans = trans.replace("scale(", ",");
         var values = trans.split(",");
-        return [parseFloat(values[0]), parseFloat(values[1])];
+        if(values.length == 2){
+            return [parseFloat(values[0]), parseFloat(values[1])];
+        }
+        else{
+            return [parseFloat(values[0]), parseFloat(values[1]), parseFloat(values[2])];
+        }
+
     };
 
     function dragStarted(d) {
@@ -52,7 +59,7 @@
         Events.on("node_reset", this.resetNode, this);
 
         Events.on("click_cell", function(cell, table){
-            if(cell.getColumnName() !== "id"){
+            if(cell.getColumnName() !== "id" || cell.row.rowIndex < 2){
                 return;
             }
             var click_node;

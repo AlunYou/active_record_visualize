@@ -2,33 +2,38 @@
 (function () {
     "use strict";
 
-    var SceneViewer = function(){};
+    var SceneViewer = function(w, h){
+        this.initialize(w, h);
+    };
 
     SceneViewer.prototype.initialize = function(w, h){
-        var $container;
+        var $scene_container;
+        var $scene;
         function zoomed() {
-            $container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+            $scene_container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
         }
         var zoom = d3.behavior.zoom()
             .scaleExtent([0.1, 10])
             .on("zoom", zoomed);
         var canvas = d3.select(".canvas")
-            .append("g")
-
             .call(zoom);
-        var parent = canvas.append("g");
-        parent.append("rect")
+        var $parent = canvas.append("g")
+            .attr("class", "global-container");
+        $parent.append("rect")
+            .attr("class", "scene-background")
             .attr("width", "100000px")
             .attr("height", "100000px")
             .attr("x", "-50000px")
             .attr("y", "-50000px")
             .style("fill", "none")
             .style("pointer-events", "all");
-        $container = parent.append("g")
+        $scene_container = $parent.append("g")
+            .attr("class", "scene-container");
+        $scene = $scene_container.append("g")
             .attr("class", "scene");
-        $container.append("text")
+        $scene.append("text")
             .attr("class", "hidden-text");
-        $container.append("svg:defs").html(
+        $scene.append("svg:defs").html(
                 '<filter id="drop-shadow" height="130%">' +
                 '<feGaussianBlur in="SourceAlpha" stdDeviation="3"/>' + <!-- stdDeviation is how much to blur -->
                 '<feOffset dx="2" dy="2" result="offsetblur"/>' + <!-- how much to offset -->
@@ -38,7 +43,7 @@
                 '</feMerge>' +
                 '</filter>');
 
-        this.$container = $container;
+        this.$scene = $scene;
         this.w = w;
         this.h = h;
 
@@ -47,13 +52,14 @@
         //var layouter = new ForceLayouter();
         var layouter = new LevelLayouter();
         this.relation_viewer = new RelationViewer(nodeVisualizer, linkVisualizer,
-            layouter, this.$container, this.w, this.h);
+            layouter, this.$scene, this.w, this.h);
     };
 
     SceneViewer.prototype.renderScene = function(scene){
         var nodes = scene.nodes;
         var links = scene.links;
         this.relation_viewer.draw(nodes, links);
+        new SVGHelper().zoomToExtent(this.$scene, this.w, this.h);
     };
 
     SceneViewer.prototype.destroyScene = function(scene){

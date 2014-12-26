@@ -23,10 +23,9 @@ $().ready(function() {
 
     var $body = $(document);
     var w = $body.width();
-    var h = $body.height();
+    var h = $body.height() - $(".setting-tab").height();
 
     var sceneViewer = new SceneViewer(w, h);
-    sceneViewer.initialize();
 
     var renderResource = function(table_name, id, resource){
         $.ajax({
@@ -37,7 +36,6 @@ $().ready(function() {
                 sceneViewer.destroyScene(window.scene);
                 window.scene = scene;
                 sceneViewer.renderScene(scene);
-                new SVGHelper().zoomToExtent(w, h);
             },
             error: function (resp) {
                 alert("failure");

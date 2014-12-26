@@ -4,8 +4,7 @@
     var SVGHelper = function(){
     };
 
-    SVGHelper.prototype.zoomToExtent = function(width, height){
-        var $scene = d3.select(".scene");
+    SVGHelper.prototype.zoomToExtent = function($scene, width, height){
         var bounds = $scene[0][0].getBBox();
         var dx = bounds.width,
             dy = bounds.height,
