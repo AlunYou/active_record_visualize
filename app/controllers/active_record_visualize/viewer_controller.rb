@@ -34,7 +34,7 @@ module ActiveRecordVisualize
       condition = params[:condition]
       #ActionController::Parameters.permit_all_parameters = true
       model = get_model_const(table_name)
-      if(condition)
+      if(condition && condition.respond_to?(:permit))
         condition = condition.permit(model.column_names)
         data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
       else
@@ -139,16 +139,20 @@ module ActiveRecordVisualize
     def get_relation_recursive(macro, table_name, id, foreign_key, foreign_id)
       model = get_model_const(table_name)
 
-      condition = {}
-      condition[foreign_key] = foreign_id
+      if(foreign_key && foreign_id)
+        condition = {}
+        condition[foreign_key] = foreign_id
+      end
       row_hash = get_table_hash(table_name, id, condition, 0)
       node_name = row_hash[:node_name]
 
+      newly_insert_node = false
       if(@nodes_hash[node_name].nil?)
         row_hash[:level] = @all_node_name_stack.size
         row_hash[:index] = @return_nodes.size
         @nodes_hash[node_name] = row_hash
         @return_nodes.push(row_hash)
+        newly_insert_node = true
       end
 
       node = @nodes_hash[node_name]
@@ -170,7 +174,7 @@ module ActiveRecordVisualize
         end
       end
 
-      if(id)
+      if(newly_insert_node && id)
         @all_node_name_stack.push(node_name)
         row = model.find(id)
         model.reflections.each do |key, association|
@@ -188,7 +192,7 @@ module ActiveRecordVisualize
             get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil)
           end
 
-          if(macro == :has_many && association.options[:through].nil?)
+          if(macro == :has_many && association.options[:through].nil? && !(name == :versions))
             map = Hash[ActiveRecord::Base.send(:descendants).collect{|c| [c.table_name, c.name]}]
             get_relation_recursive(macro, map[name.to_s], nil, foreign_key, id)
           end
