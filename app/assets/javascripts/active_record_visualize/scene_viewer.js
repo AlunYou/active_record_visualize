@@ -110,7 +110,7 @@
 
     SceneViewer.prototype.destroyScene = function(scene){
         if(scene){
-            this.destroyCanvas();
+            this.destroyCanvas(scene);
             scene.nodes = [];
             scene.links = [];
         };
