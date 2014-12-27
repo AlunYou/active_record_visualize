@@ -55,7 +55,7 @@
     };
 
     TableCell.prototype.getText = function() {
-        return $(this.$cellContainer[0][0]).find("text").text();
+        return $(this.$cellContainer[0][0]).find("text").attr("full-text");
     }
 
     TableCell.prototype.getColumnName = function() {
@@ -458,7 +458,7 @@
 
             $cellContainer.append("text")
                 .attr("class", "value")
-                .attr("x", size.width / 2)
+                .attr("x", 2)
                 .attr("y", size.height / 2)
                 .attr("dy", ".35em")
                 .text(text);
@@ -478,6 +478,7 @@
                     .text(columnName);
                 $cellContainer.append("text")
                     .attr("class", "value")
+                    .attr("indent", 20)
                     .attr("x", 20)//size.width / 2)
                     .attr("y", size.height / 4 * 3)
                     .attr("dy", ".35em")

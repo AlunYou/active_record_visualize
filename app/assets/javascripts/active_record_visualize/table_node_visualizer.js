@@ -27,7 +27,7 @@
         if(node.collection){
             //table = new ArvTable("test", "single", columns, node.rows, 30, 30);
             var titleHeight = 30, headerHeight = 30, rowHeight = 30,
-                title = node.node_name;
+                title = node.node_display_name;
             var dataArray = node.rows;
             var columnArray = $.map(node.columns, function(col, index){
                 return {title:col.title, width:col.width};
@@ -66,7 +66,7 @@
         }
         else{
             var titleHeight = 30, headerHeight = 30, rowHeight = 30,
-                title = node.node_name;
+                title = node.node_display_name;
             var hortNum = 2;
             var dataArray = node.rows[0];
             var columnArray = [];

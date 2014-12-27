@@ -75,8 +75,14 @@
                 continue;
             }
 
+            var indent_str = $text.attr("indent");
+            var indent = 0;
+            if(indent_str){
+                indent = parseFloat(indent_str);
+            }
+
             textObject.textContent = textString;
-            maxWidth = maxWidth;// || sldConst.TEXT_WIDTH;
+            maxWidth = maxWidth - indent;// || sldConst.TEXT_WIDTH;
             var strLength = textString.length;
             var width = textObject.getSubStringLength(0, strLength);
 

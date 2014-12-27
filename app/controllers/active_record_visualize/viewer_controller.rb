@@ -11,7 +11,7 @@ module ActiveRecordVisualize
     def all_models
       models = get_all_models
       return_models = models.reject do |model|
-        model.to_s.eql?('ActiveRecord::SchemaMigration')
+        model.to_s.eql?('ActiveRecord::SchemaMigration') || model.to_s.eql?('WiceGridSerializedQuery') || model.to_s.include?('Routefilter::')
       end
       return_model_names = return_models.map { |model| model.to_s}
     end
@@ -51,19 +51,41 @@ module ActiveRecordVisualize
       page_size = params['page_size'].to_i
       model = get_model_const(table_name)
 
+      columns = model.columns
+      column_name = []
+      cols = []
+      columns.each do |col|
+        hash = {}
+        hash[:dbTableName] = col.name
+        hash[:dbFieldName] = col.name
+        hash[:title] = col.name
+        hash[:valueType] = col.type
+        hash[:width] = 50
+        #if(col.name.include?('name') || col.name.include?('id') || col.name.include?('status'))
+        if(col.type != :binary)
+          cols.append(hash)
+          column_name.push(col.name)
+        else
+          v = 4
+        end
+      end
+
       id = id.to_s
       if(id && id.is_a?(String) && !id.empty?)
-        data = [model.find(id)]
+        data = model.select(column_name).where('id = ?', id)
         node_name = "#{table_name}_#{id}"
+        node_display_name = "#{table_name} (id=#{id})"
       else
         if(condition)
           total_num = model.where(condition).count
-          data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
+          data = model.select(column_name).where(condition).limit(page_size.to_i).offset(page_index*page_size)
           node_name = "#{table_name}s_foreign_#{condition.keys[0]}"
+          node_display_name = "#{table_name}s (#{condition.keys[0]} = #{condition.values[0]})"
         else
           total_num = model.all.count
-          data = model.all.limit(page_size.to_i).offset(page_index*page_size)
+          data = model.all.select(column_name).limit(page_size.to_i).offset(page_index*page_size)
           node_name = "#{table_name}s"
+          node_display_name = "#{table_name}s (All)"
         end
 
         page_num = total_num / page_size
@@ -74,24 +96,13 @@ module ActiveRecordVisualize
         collection = true
       end
 
-      columns = model.columns
-      cols = []
-      columns.each do |col|
-        hash = {}
-        hash[:dbTableName] = col.name
-        hash[:dbFieldName] = col.name
-        hash[:title] = col.name
-        hash[:valueType] = col.type
-        hash[:width] = 50
-        #if(col.name.include?('name') || col.name.include?('id') || col.name.include?('status'))
-        cols.append(hash)
-        #end
-      end
+
 
       return_hash = {}
       return_hash[:columns] = cols
       return_hash[:rows] = data
       return_hash[:node_name] = node_name
+      return_hash[:node_display_name] = node_display_name
       return_hash[:table_name] = table_name
       return_hash[:collection] = collection
       return_hash[:condition] = condition
@@ -117,7 +128,8 @@ module ActiveRecordVisualize
 
       @return_hash['nodes'] = @return_nodes
       @return_hash['links'] = @return_links
-      render json:@return_hash
+      hash = @return_hash.to_json
+      render json:hash
     end
 
     def get_model_const(table_name)

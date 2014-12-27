@@ -59,7 +59,7 @@
         Events.on("node_reset", this.resetNode, this);
 
         Events.on("click_cell", function(cell, table){
-            if(cell.getColumnName() !== "id" || cell.row.rowIndex < 2){
+            if(cell.getColumnName() !== "id" || cell.row.rowIndex < 2 || cell.row.rowIndex == cell.row.table.rows.length-1){
                 return;
             }
             var click_node;
