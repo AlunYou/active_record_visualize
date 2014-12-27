@@ -43,6 +43,7 @@
                 '</feMerge>' +
                 '</filter>');
 
+        this.$scene_container  = $scene_container;
         this.$scene = $scene;
         this.w = w;
         this.h = h;
@@ -59,29 +60,57 @@
         this.relation_viewer = new RelationViewer(nodeVisualizer, linkVisualizer,
             layouter, this.$scene, this.w, this.h);
     };
+    SceneViewer.prototype.clearContainerTransform = function(scene) {
+        this.$scene_container.attr("transform", "translate(0,0)scale(1,1)");
+    };
+    SceneViewer.prototype.reRender = function(scene) {
+        this.clearContainerTransform();
+        this.destroyCanvas(scene);
 
-    SceneViewer.prototype.renderScene = function(scene){
-        var nodes = scene.nodes;
-        var links = scene.links;
-        this.relation_viewer.draw(nodes, links);
-        if(window.auto_fit){
-            new SVGHelper().zoomToExtent(this.$scene, this.w, this.h);
+        var layouter;
+        if(window.layouter === "ForceLayouter"){
+            layouter = new ForceLayouter();
         }
+        else{
+            layouter = new LevelLayouter();
+        }
+        this.relation_viewer.layouter = layouter;
+        this.render();
     };
 
-    SceneViewer.prototype.destroyScene = function(scene){
-        if(scene){
-            for(var i=0; i<scene.nodes.length; i++) {
+    SceneViewer.prototype.render = function() {
+        this.relation_viewer.draw(this.nodes, this.links);
+        if(window.auto_fit){
+            this.clearContainerTransform();
+            new SVGHelper().zoomToExtent(this.$scene, this.w, this.h);
+        }
+    }
+
+    SceneViewer.prototype.renderScene = function(scene){
+        this.nodes = scene.nodes;
+        this.links = scene.links;
+        this.render();
+    };
+
+    SceneViewer.prototype.destroyCanvas = function(scene) {
+        if(scene) {
+            for (var i = 0; i < scene.nodes.length; i++) {
                 var node = scene.nodes[i];
-                if(node.table.$canvas){
+                if (node.table.$canvas) {
                     node.table.$canvas.remove();
                 }
 
             }
-            for(var i=0; i<scene.links.length; i++) {
+            for (var i = 0; i < scene.links.length; i++) {
                 var link = scene.links[i];
                 link.$canvas.remove();
             }
+        }
+    }
+
+    SceneViewer.prototype.destroyScene = function(scene){
+        if(scene){
+            this.destroyCanvas();
             scene.nodes = [];
             scene.links = [];
         };

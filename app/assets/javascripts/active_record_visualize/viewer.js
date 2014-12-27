@@ -42,7 +42,7 @@ $().ready(function() {
             var cookie_json = jQuery.parseJSON(cookie);
             window.mounted_at = cookie_json.mounted_at;
             window.layouter = cookie_json.layouter;
-            window.page_size = cookie_json.simple_table_page_size;
+            window.simple_table_page_size = cookie_json.simple_table_page_size;
             window.object_table_column_num = cookie_json.object_table_column_num;
             window.auto_fit = cookie_json.auto_fit;
         }
@@ -113,6 +113,17 @@ $().ready(function() {
         router.navigate(table_name+"/"+id, true);
         //renderResource(table_name, id, "relation");
     }, this);
+
+    $(".level-layout").on("click", function(){
+        window.layouter = "LevelLayouter";
+        cookieValue("layouter", window.layouter);
+        sceneViewer.reRender(window.scene);
+    });
+    $(".force-layout").on("click", function(){
+        window.layouter = "ForceLayouter";
+        cookieValue("layouter", window.layouter);
+        sceneViewer.reRender(window.scene);
+    });
 
     /*
     function render_simple() {
