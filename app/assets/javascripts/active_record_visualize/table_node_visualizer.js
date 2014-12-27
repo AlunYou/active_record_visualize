@@ -40,7 +40,7 @@
                     table.$canvas.classed("updating", true);
                     $.ajax({
                         type: "get",
-                        url: "/active_record_visualize/get_table_by_page?table_name=" + node.table_name
+                        url: window.mounted_at+"/get_table_by_page?table_name=" + node.table_name
                         + "&page_index="+navPage + "&page_size=" + node.page_size,
                         data: {condition:node.condition},
                         success: function (nodeData) {
@@ -67,7 +67,7 @@
         else{
             var titleHeight = 30, headerHeight = 30, rowHeight = 30,
                 title = node.node_display_name;
-            var hortNum = 2;
+            var hortNum = window.object_table_column_num;
             var dataArray = node.rows[0];
             var columnArray = [];
             for(var i=0; i<hortNum; i++){

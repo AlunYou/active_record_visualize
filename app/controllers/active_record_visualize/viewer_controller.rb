@@ -2,6 +2,22 @@ require_dependency "active_record_visualize/application_controller"
 
 module ActiveRecordVisualize
   class ViewerController < ApplicationController
+
+    before_action :read_write_cookie
+
+    def read_write_cookie
+      hash = {
+              mounted_at: ActiveRecordVisualize.mounted_at,
+              layouter: ActiveRecordVisualize.layouter,
+              simple_table_page_size: ActiveRecordVisualize.simple_table_page_size,
+              object_table_column_num: ActiveRecordVisualize.object_table_column_num,
+              auto_fit: ActiveRecordVisualize.auto_fit
+      }
+      if(cookies[:active_record_visualize].nil?)
+        cookies[:active_record_visualize] = hash.to_json
+      end
+    end
+
     def show
       #render json:{a:"123"}
       @all_models = all_models
@@ -11,7 +27,7 @@ module ActiveRecordVisualize
     def all_models
       models = get_all_models
       return_models = models.reject do |model|
-        model.to_s.eql?('ActiveRecord::SchemaMigration') || model.to_s.eql?('WiceGridSerializedQuery') || model.to_s.include?('Routefilter::')
+        model.to_s.eql?('ActiveRecord::SchemaMigration') || model.to_s.eql?('WiceGridSerializedQuery') || model.to_s.include?('Routefilter::') || model.to_s.include?('PaperTrail::')
       end
       return_model_names = return_models.map { |model| model.to_s}
     end

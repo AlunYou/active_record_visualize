@@ -1,5 +1,3 @@
-//= require active_record_visualize/ColumnDef
-//= require active_record_visualize/d3
 
 //sub-module TableCell
 (function () {
@@ -173,16 +171,23 @@
     };
 
     TableBase.prototype.renderFooter = function($cellContainer, size){
-        var linkWidth = 15, linkSpace = 10;
-        var left = (size.width - linkWidth * 5 - linkSpace * 4) / 2;
         var linkArray = [];
         var currentPage = this.pageIndex;
 
-        linkArray.push({page:0, text:"<<", enable:currentPage>0});
-        linkArray.push({page:currentPage-1, text:"<",  enable:currentPage>0});
-        linkArray.push({page:currentPage, text:""+(currentPage+1), enable:false, plain:true});
-        linkArray.push({page:currentPage+1, text:">", enable:currentPage+1<this.pageNum});
-        linkArray.push({page:this.pageNum-1, text:">>", enable:currentPage<this.pageNum-1});
+        linkArray.push({page:0, text:"<<", enable:currentPage>0, width:15});
+        linkArray.push({page:currentPage-1, text:"<",  enable:currentPage>0, width:15});
+        linkArray.push({page:currentPage, text:""+(currentPage+1)+" (total "+this.pageNum+")", enable:false, plain:true, width:45});
+        linkArray.push({page:currentPage+1, text:">", enable:currentPage+1<this.pageNum, width:15});
+        linkArray.push({page:this.pageNum-1, text:">>", enable:currentPage<this.pageNum-1, width:15});
+
+        var total_link_width = 0;
+        for(var i=0; i<linkArray.length; i++) {
+            var link = linkArray[i];
+            total_link_width += link.width;
+        }
+        var linkSpace = 10;
+        var left = (size.width - total_link_width - linkSpace * 4) / 2;
+
         for(var i=0; i<linkArray.length; i++){
             var link = linkArray[i];
             var $rect = $cellContainer.append("rect")
@@ -190,13 +195,13 @@
                 .attr("page", link.page)
                 .attr("x", left)
                 .attr("y", size.height/4)
-                .attr("width", linkWidth)
+                .attr("width", link.width)
                 .attr("height", size.height/2);
             $cellContainer.append("text")
                 .attr("class", (link.plain?"page-num":"hyperlink ") + (link.enable?"enable":"disable"))
                 .attr("x", left)
                 .attr("y", size.height / 2)
-                .attr("width", linkWidth)
+                .attr("width", link.width)
                 .attr("dy", ".35em")
                 .text(link.text);
             var self = this;
@@ -213,7 +218,7 @@
                 Events.trigger("nav_page", self, navPage, currentPage);
 
             });
-            left += linkWidth + linkSpace;
+            left += link.width + linkSpace;
         }
     };
 

@@ -49,8 +49,13 @@
 
         var nodeVisualizer = new TableNodeVisualizer();
         var linkVisualizer = new SimpleLinkVisualizer();
-        //var layouter = new ForceLayouter();
-        var layouter = new LevelLayouter();
+        var layouter;
+        if(window.layouter === "ForceLayouter"){
+            layouter = new ForceLayouter();
+        }
+        else{
+            layouter = new LevelLayouter();
+        }
         this.relation_viewer = new RelationViewer(nodeVisualizer, linkVisualizer,
             layouter, this.$scene, this.w, this.h);
     };
@@ -59,7 +64,9 @@
         var nodes = scene.nodes;
         var links = scene.links;
         this.relation_viewer.draw(nodes, links);
-        new SVGHelper().zoomToExtent(this.$scene, this.w, this.h);
+        if(window.auto_fit){
+            new SVGHelper().zoomToExtent(this.$scene, this.w, this.h);
+        }
     };
 
     SceneViewer.prototype.destroyScene = function(scene){

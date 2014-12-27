@@ -1,6 +1,7 @@
 // Place all the behaviors and hooks related to the matching controller here.
 // All this logic will automatically be available in application.js.
 //= require jquery
+//= require active_record_visualize/jquery.cookie
 //= require active_record_visualize/underscore
 //= require active_record_visualize/backbone
 //= require active_record_visualize/d3
@@ -20,20 +21,44 @@
 
 $().ready(function() {
 
-    window.page_size = 2;
+    window.mounted_at = "/active_record_visualize";
+    window.layouter = "LevelLayouter";
+    window.simple_table_page_size = 20;
+    window.object_table_column_num = 2;
+    window.auto_fit = true;
     window.scene = null;
+
+    var cookieValue = function(key, value){
+        if(value){
+            return $.cookie(key, value);
+        }
+        else{
+            return $.cookie(key);
+        }
+    };
+    var readFromCookie = function(){
+        var cookie = cookieValue("active_record_visualize");
+        if(cookie){
+            var cookie_json = jQuery.parseJSON(cookie);
+            window.mounted_at = cookie_json.mounted_at;
+            window.layouter = cookie_json.layouter;
+            window.page_size = cookie_json.simple_table_page_size;
+            window.object_table_column_num = cookie_json.object_table_column_num;
+            window.auto_fit = cookie_json.auto_fit;
+        }
+    };
+    readFromCookie();
 
     var $body = $(document);
     var w = $body.width();
     var h = $body.height() - $(".setting-tab").height();
-
     var sceneViewer = new SceneViewer(w, h);
 
     var renderResource = function(table_name, id, resource){
         $.ajax({
             type: "get",
-            url: "/active_record_visualize/" + resource,
-            data: {table_name:table_name, id:id==null?null:id, page_size:window.page_size, page_index:0},
+            url: window.mounted_at + "/" + resource,
+            data: {table_name:table_name, id:id==null?null:id, page_size:window.simple_table_page_size, page_index:0},
             success: function (scene) {
                 sceneViewer.destroyScene(window.scene);
                 window.scene = scene;
@@ -45,13 +70,17 @@ $().ready(function() {
         });
     };
 
-
+    var route_prefix = window.mounted_at;
+    route_prefix.replace(/^\//, "");
+    var route_hash = {};
+//    route_hash[route_prefix] = "view_default";
+//    route_hash[route_prefix+"/:table_name"] = "view_table";
+//    route_hash[route_prefix+"/:table_name/:id"] = "view_object";
+    route_hash[""] = "view_default";
+    route_hash[":table_name"] = "view_table";
+    route_hash[":table_name/:id"] = "view_object";
     var Router = Backbone.Router.extend({
-        routes: {
-            "active_record_visualize": "view_default",
-            "active_record_visualize/:table_name": "view_table",
-            "active_record_visualize/:table_name/:id": "view_object"
-        },
+        routes: route_hash,
 
         view_default: function() {
             var $select = $("#table_list_id");
@@ -69,19 +98,19 @@ $().ready(function() {
 
     var router = new Router();
 
-    Backbone.history.start({ pushState: true, root:"/" });
+    Backbone.history.start({ pushState: true, root:window.mounted_at });
 
     var $select = $("#table_list_id");
     $select.on("change", function(){
         var table_name = $select.val();
-        router.navigate("/active_record_visualize/"+table_name, true);
+        router.navigate(table_name, true);
         //renderResource(table_name, null, "table");
     });
     //renderResource(table_name, null, "table");
     //renderResource("project_user", 1, "relation");
 
     Events.on("switch_scene", function(table_name, id){
-        router.navigate("/active_record_visualize/"+table_name+"/"+id, true);
+        router.navigate(table_name+"/"+id, true);
         //renderResource(table_name, id, "relation");
     }, this);
 
