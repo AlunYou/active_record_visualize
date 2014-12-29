@@ -40,12 +40,13 @@
                     table.$canvas.classed("updating", true);
                     $.ajax({
                         type: "get",
-                        url: window.mounted_at+"/get_table_by_page?table_name=" + node.table_name
-                        + "&page_index="+navPage + "&page_size=" + node.page_size,
-                        data: {condition:node.condition},
-                        success: function (nodeData) {
+                        url: window.mounted_at+"/table",
+                        data: {condition:node.condition, table_name:node.table_name,
+                               page_index:navPage, page_size:node.page_size},
+                        success: function (scene) {
                             table.$canvas.classed("updating", false);
                             table.$canvas.remove();
+                            var nodeData = scene.nodes[0];
                             node.rows = nodeData.rows;
                             node.page_index = nodeData.page_index;
                             dataArray = node.rows;

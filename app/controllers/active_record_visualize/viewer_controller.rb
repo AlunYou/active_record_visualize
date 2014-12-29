@@ -5,6 +5,7 @@ module ActiveRecordVisualize
 
     before_action :read_write_cookie
 
+    private
     def read_write_cookie
       hash = {
               mounted_at: ActiveRecordVisualize.mounted_at,
@@ -18,12 +19,54 @@ module ActiveRecordVisualize
       end
     end
 
+    public
     def show
-      #render json:{a:"123"}
       @all_models = all_models
       render :show
     end
 
+    def table
+      table_name = params[:table_name]
+      page_index = params[:page_index].to_i
+      page_size = params[:page_size].to_i
+      condition = params[:condition]
+      model = get_model_const(table_name)
+      if(condition && condition.respond_to?(:permit))
+        condition = condition.permit(model.column_names)
+      end
+
+      return_hash = get_table_hash(table_name, nil, condition, page_index, page_size)
+      return_hash[:level] = 0
+      return_hash[:index] = 0
+
+      @return_hash = {}
+      @return_hash['nodes'] = [return_hash]
+      @return_hash['links'] = []
+      render json:@return_hash
+      return
+    end
+
+    def relation
+      table_name = params[:table_name]
+      id = params[:id]
+      page_size = params[:page_size].to_i
+
+      @return_hash = {}
+      @return_nodes = []
+      @return_links = []
+      @nodes_hash = {}
+      @links_hash = {}
+      @all_node_name_stack = []
+
+      get_relation_recursive(nil, table_name, id, nil, nil, page_size)
+
+      @return_hash['nodes'] = @return_nodes
+      @return_hash['links'] = @return_links
+      hash = @return_hash.to_json
+      render json:hash
+    end
+
+    private
     def all_models
       models = get_all_models
       return_models = models.reject do |model|
@@ -43,28 +86,11 @@ module ActiveRecordVisualize
       models = ActiveRecord::Base.descendants
     end
 
-    def get_table_by_page
-      page_index = params[:page_index].to_i
-      page_size = params[:page_size].to_i
-      table_name = params[:table_name]
-      condition = params[:condition]
-      #ActionController::Parameters.permit_all_parameters = true
-      model = get_model_const(table_name)
-      if(condition && condition.respond_to?(:permit))
-        condition = condition.permit(model.column_names)
-        data = model.where(condition).limit(page_size.to_i).offset(page_index*page_size)
-      else
-        data = model.all.limit(page_size.to_i).offset(page_index*page_size)
-      end
-
-      return_hash = {}
-      return_hash[:rows] = data
-      return_hash[:page_index] = page_index
-      render json:return_hash
+    def get_model_const(table_name)
+      model = table_name.classify.constantize
     end
 
-    def get_table_hash(table_name, id, condition, page_index)
-      page_size = params['page_size'].to_i
+    def get_table_hash(table_name, id, condition, page_index, page_size)
       model = get_model_const(table_name)
 
       columns = model.columns
@@ -108,11 +134,8 @@ module ActiveRecordVisualize
         if(total_num % page_size != 0)
           page_num = page_num + 1
         end
-
         collection = true
       end
-
-
 
       return_hash = {}
       return_hash[:columns] = cols
@@ -128,38 +151,14 @@ module ActiveRecordVisualize
       return_hash
     end
 
-    def relation
-      table_name = params['table_name']
-      id = params['id']
-      page_size = params['page_size'].to_i
-
-      @return_hash = {}
-      @return_nodes = []
-      @return_links = []
-      @nodes_hash = {}
-      @links_hash = {}
-      @all_node_name_stack = []
-
-      get_relation_recursive(nil, table_name, id, nil, nil)
-
-      @return_hash['nodes'] = @return_nodes
-      @return_hash['links'] = @return_links
-      hash = @return_hash.to_json
-      render json:hash
-    end
-
-    def get_model_const(table_name)
-      model = table_name.classify.constantize
-    end
-
-    def get_relation_recursive(macro, table_name, id, foreign_key, foreign_id)
+    def get_relation_recursive(macro, table_name, id, foreign_key, foreign_id, page_size)
       model = get_model_const(table_name)
 
       if(foreign_key && foreign_id)
         condition = {}
         condition[foreign_key] = foreign_id
       end
-      row_hash = get_table_hash(table_name, id, condition, 0)
+      row_hash = get_table_hash(table_name, id, condition, 0, page_size)
       node_name = row_hash[:node_name]
 
       newly_insert_node = false
@@ -200,72 +199,25 @@ module ActiveRecordVisualize
 
           if(macro == :belongs_to)
             assoc_id = row.send foreign_key.to_sym
-            get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil)
+            get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil, page_size)
           end
 
           if(macro == :has_one)
             assoc_id = row.send foreign_key.to_sym
-            get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil)
+            get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil, page_size)
           end
 
           if(macro == :has_many && association.options[:through].nil? && !(name == :versions))
             map = Hash[ActiveRecord::Base.send(:descendants).collect{|c| [c.table_name, c.name]}]
-            get_relation_recursive(macro, map[name.to_s], nil, foreign_key, id)
+            get_relation_recursive(macro, map[name.to_s], nil, foreign_key, id, page_size)
           end
         end
 
         @all_node_name_stack.pop()
-
-
       else
         #@last_node_name = nil
       end
-
     end
 
-    def table
-      table_name = params['table_name']
-      id = params['id']
-
-      page_index = params[:page_index].to_i
-      page_size = params[:page_size].to_i
-      condition = params[:condition]
-
-      return_hash = get_table_hash(table_name, id, condition, page_index)
-      return_hash[:level] = 0
-      return_hash[:index] = 0
-
-      @return_hash = {}
-      @return_hash['nodes'] = [return_hash]
-      @return_hash['links'] = []
-      render json:@return_hash
-      return
-
-      #data = Project.all
-      #data = Account.select('accounts.name, users.email').joins(:users)
-
-      j = data.to_json
-
-      data.each do |row|
-        t = row.id
-        c = row.class
-        t = c
-      end
-
-      data.reflect_on_all_associations.collect{ |association|
-        association.name.to_s.classify
-      }
-
-      Project.reflections.each do |key, association|
-        table_name = association.table_name
-        foreign_key = association.foreign_key
-        macro = association.macro
-        tm = macro
-      end
-
-
-
-      render json:return_hash
-    end
   end
 end
