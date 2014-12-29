@@ -8,14 +8,15 @@ version: 0.1
 active_record_visualize is a rails engine(gem) which enables developer to view database tables and their relations via graph.
 
 == Live demo:
-http://simple-demo.herokuapps.com/active_record_visualize
+http://simple-demo.herokuapp.com/active_record_visualize
 
 == How to use:
 
 1. Add this line to your gem file.
         gem 'active_record_visualize', :git => 'https://github.com/AlunYou/active_record_visualize.git'
 2. Visit '/active_record_visualize' to start viewing the database.
-3. Add active_record_visualize.rb into config/initializer folder to customize some behaviour if needed.
+3. Add active_record_visualize.rb into config/initializer folder to customize some behaviour like this.
+    (Below is also the default config)
         ActiveRecordVisualize.configure do |config|
           config.mounted_at   = '/active_record_visualize'
           config.layouter     = 'LevelLayouter' #another one is 'ForceLayouter'
