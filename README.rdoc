@@ -1,3 +1,51 @@
-= ActiveRecordVisualize
+= active_record_visualize
 
-This project rocks and uses MIT-LICENSE.
+version: 0.1
+
+
+== Introduction:
+
+active_record_visualize is a rails engine(gem) which enables developer to view database tables and their relations via graph.
+
+== Live demo:
+http://simple-demo.herokuapps.com/active_record_visualize
+
+== How to use:
+
+1. Add this line to your gem file.
+        gem 'active_record_visualize', :git => 'https://github.com/AlunYou/active_record_visualize.git'
+2. Visit '/active_record_visualize' to start viewing the database.
+3. Add active_record_visualize.rb into config/initializer folder to customize some behaviour if needed.
+        ActiveRecordVisualize.configure do |config|
+          config.mounted_at   = '/active_record_visualize'
+          config.layouter     = 'LevelLayouter' #another one is 'ForceLayouter'
+          config.simple_table_page_size    = 20
+          config.object_table_column_num   = 2
+          config.auto_fit     = true
+        end
+
+== How to run unit test:
+
+1. run command "rspec".
+
+== Dependencies:
+
+1. jquery.
+2. backbone is used for History/Router/Events.
+3. d3.js is used for svg handling.
+
+== Contributing:
+1. Please use fork+pull request to contribute.
+2. Email me if you want more.
+
+== License:
+
+(The MIT License)
+
+Copyright © 2014 Alun You
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
