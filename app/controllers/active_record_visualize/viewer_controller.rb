@@ -26,16 +26,16 @@ module ActiveRecordVisualize
     end
 
     def table
-      table_name = params[:table_name]
+      model_name = params[:model_name]
       page_index = params[:page_index].to_i
       page_size = params[:page_size].to_i
       condition = params[:condition]
-      model = get_model_const(table_name)
+      model = model_name.constantize
       if(condition && condition.respond_to?(:permit))
         condition = condition.permit(model.column_names)
       end
 
-      return_hash = get_table_hash(table_name, nil, condition, page_index, page_size)
+      return_hash = get_table_hash(model, nil, condition, page_index, page_size)
       return_hash[:level] = 0
       return_hash[:index] = 0
 
@@ -47,7 +47,7 @@ module ActiveRecordVisualize
     end
 
     def relation
-      table_name = params[:table_name]
+      model_name = params[:model_name]
       id = params[:id]
       page_size = params[:page_size].to_i
 
@@ -58,7 +58,8 @@ module ActiveRecordVisualize
       @links_hash = {}
       @all_node_name_stack = []
 
-      get_relation_recursive(nil, table_name, id, nil, nil, page_size)
+      model = model_name.constantize
+      get_relation_recursive(nil, model, id, nil, nil, page_size)
 
       @return_hash['nodes'] = @return_nodes
       @return_hash['links'] = @return_links
@@ -90,8 +91,8 @@ module ActiveRecordVisualize
       model = table_name.classify.constantize
     end
 
-    def get_table_hash(table_name, id, condition, page_index, page_size)
-      model = get_model_const(table_name)
+    def get_table_hash(model, id, condition, page_index, page_size)
+      table_name = model.table_name
 
       columns = model.columns
       column_name = []
@@ -118,7 +119,7 @@ module ActiveRecordVisualize
         node_name = "#{table_name}_#{id}"
         node_display_name = "#{table_name} (id=#{id})"
       else
-        if(condition)
+        if(condition && condition.respond_to?(:keys))
           total_num = model.where(condition).count
           data = model.select(column_name).where(condition).limit(page_size.to_i).offset(page_index*page_size)
           node_name = "#{table_name}s_foreign_#{condition.keys[0]}"
@@ -142,7 +143,7 @@ module ActiveRecordVisualize
       return_hash[:rows] = data
       return_hash[:node_name] = node_name
       return_hash[:node_display_name] = node_display_name
-      return_hash[:table_name] = table_name
+      return_hash[:model_name] = model.name
       return_hash[:collection] = collection
       return_hash[:condition] = condition
       return_hash[:page_size] = page_size
@@ -151,14 +152,12 @@ module ActiveRecordVisualize
       return_hash
     end
 
-    def get_relation_recursive(macro, table_name, id, foreign_key, foreign_id, page_size)
-      model = get_model_const(table_name)
-
+    def get_relation_recursive(macro, model, id, foreign_key, foreign_id, page_size)
       if(foreign_key && foreign_id)
         condition = {}
         condition[foreign_key] = foreign_id
       end
-      row_hash = get_table_hash(table_name, id, condition, 0, page_size)
+      row_hash = get_table_hash(model, id, condition, 0, page_size)
       node_name = row_hash[:node_name]
 
       newly_insert_node = false
@@ -196,20 +195,28 @@ module ActiveRecordVisualize
           foreign_key = association.foreign_key
           macro = association.macro
           name = association.name
-
-          if(macro == :belongs_to)
-            assoc_id = row.send foreign_key.to_sym
-            get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil, page_size)
+          begin
+            recursive_model = get_model_const(name.to_s)
+          rescue => e
+            Rails.logger.debug("error parsing model from association name: #{e}");
+            recursive_model = nil
           end
 
-          if(macro == :has_one)
-            assoc_id = row.send foreign_key.to_sym
-            get_relation_recursive(macro, name.to_s, assoc_id, foreign_key, nil, page_size)
-          end
+          if(!recursive_model.nil?)
+            if(macro == :belongs_to)
+              assoc_id = row.send foreign_key.to_sym
+              get_relation_recursive(macro, recursive_model, assoc_id, foreign_key, nil, page_size)
+            end
 
-          if(macro == :has_many && association.options[:through].nil? && !(name == :versions))
-            map = Hash[ActiveRecord::Base.send(:descendants).collect{|c| [c.table_name, c.name]}]
-            get_relation_recursive(macro, map[name.to_s], nil, foreign_key, id, page_size)
+            if(macro == :has_one)
+              assoc_id = row.send foreign_key.to_sym
+              get_relation_recursive(macro, recursive_model, assoc_id, foreign_key, nil, page_size)
+            end
+
+            if(macro == :has_many && association.options[:through].nil? && !(name == :versions))
+              map = Hash[ActiveRecord::Base.send(:descendants).collect{|c| [c.table_name, c]}]
+              get_relation_recursive(macro, map[name.to_s], nil, foreign_key, id, page_size)
+            end
           end
         end
 

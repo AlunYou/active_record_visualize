@@ -71,7 +71,7 @@
                 }
             }
             var text = cell.getText();
-            Events.trigger("switch_scene", node.table_name, text);
+            Events.trigger("switch_scene", node.model_name, text);
         }, this);
     };
 

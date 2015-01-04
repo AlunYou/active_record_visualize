@@ -54,11 +54,11 @@ $().ready(function() {
     var h = $body.height() - $(".setting-tab").height();
     var sceneViewer = new SceneViewer(w, h);
 
-    var renderResource = function(table_name, id, resource){
+    var renderResource = function(model_name, id, resource){
         $.ajax({
             type: "get",
             url: window.mounted_at + "/" + resource,
-            data: {table_name:table_name, id:id==null?null:id, page_size:window.simple_table_page_size, page_index:0},
+            data: {model_name:model_name, id:id==null?null:id, page_size:window.simple_table_page_size, page_index:0},
             success: function (scene) {
                 sceneViewer.destroyScene(window.scene);
                 window.scene = scene;
@@ -74,25 +74,25 @@ $().ready(function() {
     route_prefix.replace(/^\//, "");
     var route_hash = {};
 //    route_hash[route_prefix] = "view_default";
-//    route_hash[route_prefix+"/:table_name"] = "view_table";
-//    route_hash[route_prefix+"/:table_name/:id"] = "view_object";
+//    route_hash[route_prefix+"/:model_name"] = "view_table";
+//    route_hash[route_prefix+"/:model_name/:id"] = "view_object";
     route_hash[""] = "view_default";
-    route_hash[":table_name"] = "view_table";
-    route_hash[":table_name/:id"] = "view_object";
+    route_hash[":model_name"] = "view_table";
+    route_hash[":model_name/:id"] = "view_object";
     var Router = Backbone.Router.extend({
         routes: route_hash,
 
         view_default: function() {
             var $select = $("#table_list_id");
-            var table_name = $select.val();
-            renderResource(table_name, null, "table");
+            var model_name = $select.val();
+            renderResource(model_name, null, "table");
         },
 
-        view_table: function(table_name) {
-            renderResource(table_name, null, "table");
+        view_table: function(model_name) {
+            renderResource(model_name, null, "table");
         },
-        view_object: function(table_name, id) {
-            renderResource(table_name, id, "relation");
+        view_object: function(model_name, id) {
+            renderResource(model_name, id, "relation");
         }
     });
 
@@ -102,16 +102,16 @@ $().ready(function() {
 
     var $select = $("#table_list_id");
     $select.on("change", function(){
-        var table_name = $select.val();
-        router.navigate(table_name, true);
-        //renderResource(table_name, null, "table");
+        var model_name = $select.val();
+        router.navigate(model_name, true);
+        //renderResource(model_name, null, "table");
     });
-    //renderResource(table_name, null, "table");
+    //renderResource(model_name, null, "table");
     //renderResource("project_user", 1, "relation");
 
-    Events.on("switch_scene", function(table_name, id){
-        router.navigate(table_name+"/"+id, true);
-        //renderResource(table_name, id, "relation");
+    Events.on("switch_scene", function(model_name, id){
+        router.navigate(model_name+"/"+id, true);
+        //renderResource(model_name, id, "relation");
     }, this);
 
     $(".level-layout").on("click", function(){

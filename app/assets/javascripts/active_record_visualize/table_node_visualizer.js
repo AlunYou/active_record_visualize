@@ -41,7 +41,7 @@
                     $.ajax({
                         type: "get",
                         url: window.mounted_at+"/table",
-                        data: {condition:node.condition, table_name:node.table_name,
+                        data: {condition:node.condition, model_name:node.model_name,
                                page_index:navPage, page_size:node.page_size},
                         success: function (scene) {
                             table.$canvas.classed("updating", false);
