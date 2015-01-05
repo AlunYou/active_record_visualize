@@ -12,11 +12,11 @@
         function zoomed() {
             $scene_container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
         }
-        var zoom = d3.behavior.zoom()
+        this.zoom = d3.behavior.zoom()
             .scaleExtent([0.1, 10])
             .on("zoom", zoomed);
         var canvas = d3.select(".canvas")
-            .call(zoom);
+            .call(this.zoom);
         var $parent = canvas.append("g")
             .attr("class", "global-container");
         $parent.append("rect")
@@ -62,6 +62,7 @@
     };
     SceneViewer.prototype.clearContainerTransform = function(scene) {
         this.$scene_container.attr("transform", "translate(0,0)scale(1,1)");
+        this.zoom.translate([0,0]).scale(1);
     };
     SceneViewer.prototype.reRender = function(scene) {
         this.clearContainerTransform();
