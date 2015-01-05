@@ -122,13 +122,13 @@ module ActiveRecordVisualize
         if(condition && condition.respond_to?(:keys))
           total_num = model.where(condition).count
           data = model.select(column_name).where(condition).limit(page_size.to_i).offset(page_index*page_size)
-          node_name = "#{table_name}s_foreign_#{condition.keys[0]}"
-          node_display_name = "#{table_name}s (#{condition.keys[0]} = #{condition.values[0]})"
+          node_name = "#{table_name}_foreign_#{condition.keys[0]}"
+          node_display_name = "#{table_name} (#{condition.keys[0]} = #{condition.values[0]})"
         else
           total_num = model.all.count
           data = model.all.select(column_name).limit(page_size.to_i).offset(page_index*page_size)
-          node_name = "#{table_name}s"
-          node_display_name = "#{table_name}s (All)"
+          node_name = "#{table_name}"
+          node_display_name = "#{table_name} (All)"
         end
 
         page_num = total_num / page_size
